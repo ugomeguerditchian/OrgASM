@@ -90,7 +90,7 @@ def from_wordlist(domain):
     subdomains = []
     for line in lines:
         #loaading percentage
-        print("Wordlist testing : " + str(round(lines.index(line) / len(lines) * 100, 2)) + "%", end="\r")
+        print(f"Wordlist testing : {str(round(lines.index(line) / len(lines) * 100, 2))}%", end="\r")
         request_to_test = line.strip() + "." + domain
         try:
             #try to connect to the subdomain
