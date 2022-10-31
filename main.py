@@ -58,11 +58,15 @@ def menu():
     print("\nDone")
 
     print("IP scanning...")
+    #ask for how many thread to use
+    thread_number = int(input("Enter the number of thread to use: "))
     ip_scan= {}
     for ip, domains in ip_dict.items():
         ip_scan[ip]={}
-        ports_for_ip= ips.detect_open_ports(ip)
+        ports_for_ip= ips.detect_open_port_thread(ip, thread_number)
         for port in ports_for_ip:
+            ip_scan[ip][port]={}
+            print(f"Port scan service for {ip} : " + str(round(ports_for_ip.index(port) / len(ports_for_ip) * 100, 2)) + "%", end="\r")
             ip_scan[ip][port]["service"]= ips.detect_service(ip, port)
     
     print("IP scanning done")
