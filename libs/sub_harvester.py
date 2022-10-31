@@ -94,6 +94,11 @@ def from_wordlist(domain):
         request_to_test = line.strip() + "." + domain
         try:
             #try to connect to the subdomain
+            #detect if there is a redirection
+            #if there is a redirection, check if the redirection is the same as the actual subdomain tested
+            #if the redirection is the same as the actual subdomain tested, add the subdomain to the list
+            #if the redirection is not the same as the actual subdomain tested, don't add the subdomain to the list
+            #if there is no redirection, add the subdomain to the list
             socket.gethostbyname(request_to_test)
             #if the connection is successful, add the subdomain to the list
             subdomains.append(request_to_test)
