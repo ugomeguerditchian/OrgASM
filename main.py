@@ -2,8 +2,12 @@ from libs import dns_request
 from libs import sub_harvester as sh
 from libs import result_parser as rp
 from libs import ip_scan as ips
+from libs import custom_logger as cl
+import datetime
 import os
 import json
+import re
+from pprint import pprint
 
 
 
@@ -11,20 +15,24 @@ def menu():
     final_dict_result = {}
     #ask for domain name
     domain = input("Enter domain name: ")
+    # Check if the domain name is valid with regex
+    while not re.match(r"^[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}$", domain):
+        cl.logger.error("Invalid domain name")
+        domain = input("Enter domain name: ")
     all_results = []
     #get all the subdomains from alienvault
-    print("Alienvault testing...")
+    cl.logger.info("Alienvault testing...")
     all_results += sh.alienvault_parser(domain)
-    print("Alienvault testing done")
+    cl.logger.info("Alienvault testing done")
     #get all the subdomains from hackertarget
-    print("Hackertarget testing...")
+    cl.logger.info("Hackertarget testing...")
     all_results += sh.hacker_target_parser(domain)
-    print("Hackertarget testing done")
+    cl.logger.info("Hackertarget testing done")
     #get all the subdomains from wordlist
     all_results += sh.from_wordlist(domain)
-    print("Wordlist testing done")
+    cl.logger.info("Wordlist testing done")
     #delete all the occurences in the list
-    print("Deleting occurences...")
+    cl.logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
     dns_result=[]
     for result in all_results:
@@ -33,10 +41,10 @@ def menu():
         #join all the list in one list
         dns_result += dns_request.main(result)
     all_results+= dns_result
-    print("DNS testing done")
-    print("Deleting occurences...")
+    cl.logger.info("DNS testing done")
+    cl.logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
-    print("All done")
+    cl.logger.info("All done")
     #clear the screen
     try :
         os.system("cls")
@@ -44,23 +52,21 @@ def menu():
         #linux
         os.system("clear")
     final_dict= rp.result_filter(all_results, domain)
-    print(f"Subdomains containing {domain}:\n")
+    cl.logger.info(f"Subdomains containing {domain}:\n")
     for subdomain in final_dict["subdomain_withdomain"]:
-        print(subdomain)
-    print(f"\nSubdomains not containing {domain}:\n")
+        cl.logger.info(subdomain)
+    cl.logger.info(f"Subdomains not containing {domain}:\n")
     for subdomain in final_dict["subdomain_withoutdomain"]:
-        print(subdomain)
+        cl.logger.info(subdomain)
     
-    print("\nIP sorting...")
+    cl.logger.info("IP sorting...")
     ip_dict = ips.get_all_ip(all_results, domain)
-    print("IP sorting done")
-    print("\nIP sorting results:\n")
-    for ip in ip_dict:
-        print(f"{ip} : {ip_dict[ip]['subdomains']}")
-    print("\nDone")
-    final_dict_result= ip_dict
+    cl.logger.info("IP sorting done")
+    cl.logger.info("IP sorting results:")
+    pprint(ip_dict)
+    cl.logger.info("Done")
 
-    print("IP scanning...")
+    cl.logger.info("IP scanning...")
     #ask for how many thread to use
     thread_number = int(input("Enter the number of thread to use: "))
     for ip, domains in final_dict_result.items():
