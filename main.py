@@ -3,10 +3,12 @@ from libs import sub_harvester as sh
 from libs import result_parser as rp
 from libs import ip_scan as ips
 import os
+import json
 
 
 
 def menu():
+    final_dict_result = {}
     #ask for domain name
     domain = input("Enter domain name: ")
     all_results = []
@@ -54,43 +56,43 @@ def menu():
     print("IP sorting done")
     print("\nIP sorting results:\n")
     for ip in ip_dict:
-        print(f"{ip} : {ip_dict[ip]}")
+        print(f"{ip} : {ip_dict[ip]['subdomains']}")
     print("\nDone")
+    final_dict_result= ip_dict
 
     print("IP scanning...")
     #ask for how many thread to use
     thread_number = int(input("Enter the number of thread to use: "))
-    ip_scan= {}
-    for ip, domains in ip_dict.items():
-        ip_scan[ip]={}
+    for ip, domains in final_dict_result.items():
         ports_for_ip= ips.detect_open_port_thread(ip, thread_number)
         for port in ports_for_ip:
-            ip_scan[ip][port]={}
+            final_dict_result[ip]["ports"]={}
+            final_dict_result[ip]["ports"][port]={}
             print(f"Port scan service for {ip} : " + str(round(ports_for_ip.index(port) / len(ports_for_ip) * 100, 2)) + "%", end="\r")
-            ip_scan[ip][port]["service"]= ips.detect_service(ip, port)
+            final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
+            #ip_scan[ip][port]["banner"]= ips.detect_banner(ip, port)
     
     print("IP scanning done")
     print("\nIP scanning results:\n")
-    for ip in ip_scan:
-        print(f"{ip} : {ip_scan[ip]}")
+    for ip in final_dict_result:
+        print(f"{ip} : {final_dict_result[ip]}")
     print("\nDone")
     
 
 
 
-    #ask if the user want to save the results
-    save = input("\nDo you want to save the results? (y/n): ")
+    #ask if the user want to save the result
+    save = input("Do you want to save the result? (y/n): ")
+    #ask for the name of the file
     if save == "y":
-        #save the results
-        with open("results.txt", "w") as f:
-            f.write(f"Subdomains containing {domain}:\n")
-            for subdomain in final_dict["subdomain_withdomain"]:
-                f.write(subdomain + "\n")
-            f.write(f"\nSubdomains not containing {domain}:\n")
-            for subdomain in final_dict["subdomain_withoutdomain"]:
-                f.write(subdomain + "\n")
-            f.close()
-        print("Results saved in results.txt")
+        file_name = input("Enter the name of the file: ")
+        with open(file_name, "w") as f:
+            json.dump(final_dict_result, f, indent=4)
+        print("File saved")
+        exit()
+    else:
+        print("Exiting...")
+        exit()
 
 
 

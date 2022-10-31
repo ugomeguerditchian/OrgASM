@@ -64,24 +64,41 @@ def detect_service(ip, port):
     except:
         return None
 
+def detect_banner(ip, port):
+    #detect the banner from the ip address and the port
+    #return the banner
+    try:
+        #try to connect to the port
+        s = socket.create_connection((ip, port))
+        #if the connection is successful, get the banner
+        banner = s.recv(1024)
+        return banner
+    except:
+        return None
+
 def get_all_ip(subdomains: list, domain :str):
     #for all subdomains ping them and retrive their ip address
     #return a dict with ip address as key and subdomains as value
     """
     dict = {
-        "ip": ["subdomain1", "subdomain2", "subdomain3"]
+        "ip"{
+            subdomains: ["subdomain1", "subdomain2", "subdomain3"]
+            }
     }
     """
+
     dict = {}
     for subdomain in subdomains:
-        #get the ip address
+        #ping the subdomain
         ip = get_ip(subdomain)
-        #if the ip address is not None
-        if ip != None:
-            #if the ip address is not in the dict
-            if ip not in dict:
-                #add the ip address to the dict
-                dict[ip] = []
-            #add the subdomain to the dict
-            dict[ip].append(subdomain)
+        if ip is not None:
+            #if the subdomain has an ip address
+            if ip in dict:
+                #if the ip address is already in the dict, add the subdomain to the list
+                dict[ip]["subdomains"].append(subdomain)
+            else:
+                #if the ip address is not in the dict, add the ip address to the dict
+                dict[ip] = {"subdomains": [subdomain]}
+        else:
+            pass
     return dict
