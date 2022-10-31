@@ -35,7 +35,11 @@ def menu():
     all_results = rp.delete_occurences(all_results)
     print("All done")
     #clear the screen
-    os.system("cls")
+    try :
+        os.system("cls")
+    except:
+        #linux
+        os.system("clear")
     final_dict= rp.result_filter(all_results, domain)
     print(f"Subdomains containing {domain}:\n")
     for subdomain in final_dict["subdomain_withdomain"]:
