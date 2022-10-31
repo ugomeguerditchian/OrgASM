@@ -3,6 +3,7 @@ import requests
 import json
 import requests
 import socket
+import os
 
 def delete_occurences(list : list):
     #delete all the occurences in a list
@@ -88,6 +89,7 @@ def hacker_target_parser(domain):
     subdomains = delete_occurences(subdomains)
     return subdomains
 
+
 def from_wordlist(domain):
     #wordlist is Subdomain.txt
     #open the file
@@ -97,6 +99,8 @@ def from_wordlist(domain):
     #test all the subdomains like {subdomain}.{domain}
     subdomains = []
     for line in lines:
+        #loaading percentage
+        print("Wordlist testing : " + str(round(lines.index(line) / len(lines) * 100, 2)) + "%", end="\r")
         request_to_test = line.strip() + "." + domain
         try:
             #try to connect to the subdomain
@@ -114,19 +118,35 @@ def menu():
     domain = input("Enter domain name: ")
     all_results = []
     #get all the subdomains from alienvault
+    print("Alienvault testing...")
     all_results += alienvault_parser(domain)
+    print("Alienvault testing done")
     #get all the subdomains from hackertarget
+    print("Hackertarget testing...")
     all_results += hacker_target_parser(domain)
+    print("Hackertarget testing done")
     #get all the subdomains from wordlist
     all_results += from_wordlist(domain)
+    print("Wordlist testing done")
     #delete all the occurences in the list
+    print("Deleting occurences...")
     all_results = delete_occurences(all_results)
     dns_result=[]
+    print("DNS testing...")
     for result in all_results:
-        dns_result.append(dns_request.main(result))
-    all_results = all_results + dns_result
+        #dns_request.main return a list
+        #join all the list in one list
+        dns_result += dns_request.main(result)
+    all_results+= dns_result
+    print("DNS testing done")
+    print("Deleting occurences...")
     all_results = delete_occurences(all_results)
-    print(all_results)
+    print("All done")
+    #clear the screen
+    os.system("cls")
+    print(f"Here is the list of subdomains for detected {domain}:")
+    for result in all_results:
+        print(result)
 
 
 
