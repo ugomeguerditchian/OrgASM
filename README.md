@@ -29,7 +29,10 @@ Install ASMemble with pip
     
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://github.com/ugomeguerditchian/ASMemble/blob/main/screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20095424.png?raw=true)
+
+![App Screenshot2](https://github.com/ugomeguerditchian/ASMemble/blob/main/screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20100931.png?raw=true)
+
 
 
 ## Roadmap
