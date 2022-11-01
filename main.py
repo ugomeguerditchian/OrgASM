@@ -79,11 +79,13 @@ def menu():
             final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
             #ip_scan[ip][port]["banner"]= ips.detect_banner(ip, port)
     
-    pprint("IP scanning done")
-    pprint("\nIP scanning results:\n")
+    print("IP scanning done")
+    cl.logger.info("IP scanning service analysis...")
+    final_dict_result= rp.service_recognizer(final_dict_result)
+    print("\nIP scanning results:\n")
     for ip in final_dict_result:
         print(f"{ip} : {final_dict_result[ip]}")
-    pprint("\nDone")
+    print("\nDone")
     
 
 
