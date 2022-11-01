@@ -52,20 +52,21 @@ def menu():
         #linux
         os.system("clear")
     final_dict= rp.result_filter(all_results, domain)
-    cl.logger.info(f"Subdomains containing {domain}:\n")
+    print(f"Subdomains containing {domain}:\n")
     for subdomain in final_dict["subdomain_withdomain"]:
-        cl.logger.info(subdomain)
-    cl.logger.info(f"Subdomains not containing {domain}:\n")
+        print(subdomain)
+    print(f"\nSubdomains not containing {domain}:\n")
     for subdomain in final_dict["subdomain_withoutdomain"]:
-        cl.logger.info(subdomain)
+        print(subdomain)
     
     cl.logger.info("IP sorting...")
     ip_dict = ips.get_all_ip(all_results, domain)
     cl.logger.info("IP sorting done")
     cl.logger.info("IP sorting results:")
-    pprint(ip_dict)
+    for ip in ip_dict:
+        print(f"{ip} : {ip_dict[ip]}")
     cl.logger.info("Done")
-
+    final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
     #ask for how many thread to use
     thread_number = int(input("Enter the number of thread to use: "))
@@ -78,11 +79,11 @@ def menu():
             final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
             #ip_scan[ip][port]["banner"]= ips.detect_banner(ip, port)
     
-    print("IP scanning done")
-    print("\nIP scanning results:\n")
+    pprint("IP scanning done")
+    pprint("\nIP scanning results:\n")
     for ip in final_dict_result:
         print(f"{ip} : {final_dict_result[ip]}")
-    print("\nDone")
+    pprint("\nDone")
     
 
 
@@ -90,9 +91,12 @@ def menu():
     #ask if the user want to save the result
     save = input("Do you want to save the result? (y/n): ")
     #ask for the name of the file
+    #detect if folderse exports exist
+    if not os.path.exists("exports"):
+        os.mkdir("exports")
     if save == "y":
         file_name = input("Enter the name of the file: ")
-        with open(file_name, "w") as f:
+        with open("exports/"+file_name, "w") as f:
             json.dump(final_dict_result, f, indent=4)
         print("File saved")
         exit()
