@@ -24,7 +24,7 @@ Install ASMemble with pip
   git clone https://github.com/ugomeguerditchian/ASMemble
   cd ASMemble
   pip install -r requirements.txt
-  python main.py
+  python main.py -d <domain> -t <threads:Optional> -o <savefile:Bool>
 ```
     
 ## Screenshots
@@ -63,5 +63,5 @@ Install ASMemble with pip
 
 ## Contributors
 
-- [@mrstaf](https://github.com/MrStaf/MrStaf)
+- [@mrstaf](https://github.com/MrStaf)
 

@@ -8,13 +8,36 @@ import os
 import json
 import re
 from pprint import pprint
+import argparse 
 
 
 
 def menu():
+    argpars = argparse.ArgumentParser()
+    argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
+    argpars.add_argument("-t", "--threads", required=False, help="Number of threads to use (recommended 300)")
+    argpars.add_argument("-o", "--output", choices=["True", "False"],required=False, default=False, help="Output save, default is False")
+
+    args = argpars.parse_args()
+    # help for argpars
+    domain = ""
+    if args.domain:
+        domain = args.domain
+    else:
+        domain = input("Enter domain to scan: ")
+    
+    thread_number = 10
+    if args.threads:
+        thread_number = int(args.threads)
+    else:
+        thread_number = int(input("Enter number of threads to use: "))
+    
+    output = False
+    if args.output:
+        output = bool(args.output)
+
     final_dict_result = {}
     #ask for domain name
-    domain = input("Enter domain name: ")
     # Check if the domain name is valid with regex
     while not re.match(r"^[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}$", domain):
         cl.logger.error("Invalid domain name")
@@ -52,10 +75,10 @@ def menu():
         #linux
         os.system("clear")
     final_dict= rp.result_filter(all_results, domain)
-    print(f"Subdomains containing {domain}:\n")
+    cl.logger.info(f"Subdomains containing {domain}:")
     for subdomain in final_dict["subdomain_withdomain"]:
         print(subdomain)
-    print(f"\nSubdomains not containing {domain}:\n")
+    cl.logger.info(f"Subdomains not containing {domain}:")
     for subdomain in final_dict["subdomain_withoutdomain"]:
         print(subdomain)
     
@@ -63,50 +86,43 @@ def menu():
     ip_dict = ips.get_all_ip(all_results, domain)
     cl.logger.info("IP sorting done")
     cl.logger.info("IP sorting results:")
-    for ip in ip_dict:
-        print(f"{ip} : {ip_dict[ip]}")
+    pprint(ip_dict)
     cl.logger.info("Done")
     final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
     #ask for how many thread to use
-    thread_number = int(input("Enter the number of thread to use: "))
     for ip, domains in final_dict_result.items():
         ports_for_ip= ips.detect_open_port_thread(ip, thread_number)
         for port in ports_for_ip:
             final_dict_result[ip]["ports"]={}
             final_dict_result[ip]["ports"][port]={}
-            print(f"Port scan service for {ip} : " + str(round(ports_for_ip.index(port) / len(ports_for_ip) * 100, 2)) + "%", end="\r")
+            print(f"Port scan service for {ip} : " + str(round(ports_for_ip.index(port) / len(ports_for_ip) * 100, 2)) + "%" + " "*8, end="\r")
             final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
-            #ip_scan[ip][port]["banner"]= ips.detect_banner(ip, port)
     
-    print("IP scanning done")
+    cl.logger.info("IP scanning done")
     cl.logger.info("IP scanning service analysis...")
     final_dict_result= rp.service_recognizer(final_dict_result)
-    print("\nIP scanning results:\n")
-    for ip in final_dict_result:
-        print(f"{ip} : {final_dict_result[ip]}")
-    print("\nDone")
-    
-
-
-
-    #ask if the user want to save the result
-    save = input("Do you want to save the result? (y/n): ")
-    #ask for the name of the file
-    #detect if folderse exports exist
+    cl.logger.info("IP scanning results:")
+    pprint(final_dict_result)
+    cl.logger.info("Done")
+    save = ""
+    if not output:
+        save = input("Do you want to save the result? (y/n): ")
+    else:
+        if output:
+            save = "y"
+        else :
+            save = "n"
     if not os.path.exists("exports"):
         os.mkdir("exports")
     if save == "y":
-        file_name = input("Enter the name of the file: ")
+        # Get the current date and format it as YY-mm-dd-hh-mm-ss
+        date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        file_name = f"result_{domain.replace('.','-')}_{date}.json"
         with open("exports/"+file_name, "w") as f:
             json.dump(final_dict_result, f, indent=4)
-        print("File saved")
-        exit()
-    else:
-        print("Exiting...")
-        exit()
-
-
+        cl.logger.info(f"File saved in exports/{file_name}")
+    cl.logger.info("Exiting...")
 
 menu()
 
