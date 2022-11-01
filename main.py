@@ -107,7 +107,8 @@ def menu():
     cl.logger.info("Done")
     save = ""
     if not output:
-        save = input("Do you want to save the result? (y/n): ")
+        while save.lower() != "y" or save.lower() != "n":
+            save = input("Do you want to save the result? (y/n): ")
     else:
         if output:
             save = "y"
@@ -115,8 +116,7 @@ def menu():
             save = "n"
     if not os.path.exists("exports"):
         os.mkdir("exports")
-    if save == "y":
-        # Get the current date and format it as YY-mm-dd-hh-mm-ss
+    if save.lower() == "y":
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         file_name = f"result_{domain.replace('.','-')}_{date}.json"
         with open("exports/"+file_name, "w") as f:
