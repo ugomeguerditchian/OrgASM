@@ -24,7 +24,7 @@ Install **ASMemble** with pip
   pip install -r requirements.txt
   python main.py -d <domain> -t <threads:Optional> -o <savefile:Bool>
 ```
-> :memo: **Note:** `python main.py -h`
+> :memo: **Note:** help with `python main.py -h`
 ## Screenshots
 
 ![App Screenshot](./screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20095424.png)
