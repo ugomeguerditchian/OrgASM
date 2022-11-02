@@ -1,8 +1,9 @@
 
+[![PyPI - Python](https://img.shields.io/badge/python-v3%2E8-181717?logo=python&style=flat)](https://github.com/ugomeguerditchian/ASMemble)
+
 <h2 align="center">ASMemble</h2>
 
 A tool for automated ASM (Attack Surface Monitoring)
-
 
 ## Features
 
@@ -11,7 +12,6 @@ A tool for automated ASM (Attack Surface Monitoring)
 - DNS query
 - IP Sorting and scanning (Ports and services)
 - JSON Export
-
 
 ## Installation
 
@@ -24,16 +24,17 @@ Install **ASMemble** with pip
   pip install -r requirements.txt
   python main.py -d <domain> -t <threads:Optional> -o <savefile:Bool>
 ```
+
 > :memo: **Note:** help with `python main.py -h`
+
 ## Screenshots
 
 ![App Screenshot](./screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20095424.png)
 
 ![App Screenshot2](./screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20100931.png)
 
-
-
 ## Roadmap
+
 - [ ] Service scanning amelioration
 - [ ] Args parse compatibility
 - [ ] Selection of little, medium or big subdomains wordlist for bruteforcing test
@@ -44,13 +45,10 @@ Install **ASMemble** with pip
 - [ ] Export map options
 - [ ] Possibility to add a list of already knows subdomains
 
-
-
 ## Authors
 
 - [@ugomeguerditchian](https://github.com/ugomeguerditchian)
 
 ## Contributors
 
-- [@mrstaf](https://github.com/MrStaf)
-
+- [@MrStaf](https://github.com/MrStaf)
