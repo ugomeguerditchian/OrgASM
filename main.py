@@ -15,7 +15,9 @@ import argparse
 def menu():
     argpars = argparse.ArgumentParser()
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
-    argpars.add_argument("-t", "--threads", required=False, help="Number of threads to use (recommended 300)")
+    argpars.add_argument("-w", "--wordlist", default="medium", required=False, help="Wordlist to use (small, medium(default), big)")
+    argpars.add_argument("-wT", "--wordlistThreads", default=500, required=False, help="Number of threads to use for Wordlist(default 500)")
+    argpars.add_argument("-sT", "--ipThreads", default=300, required=False, help="Number of threads to use for IP scan(default 300)")
     argpars.add_argument("-o", "--output", choices=["True", "False"],required=False, default=False, help="Output save, default is False")
 
     args = argpars.parse_args()
@@ -26,11 +28,7 @@ def menu():
     else:
         domain = input("Enter domain to scan: ")
     
-    thread_number = 10
-    if args.threads:
-        thread_number = int(args.threads)
-    else:
-        thread_number = int(input("Enter number of threads to use: "))
+
     
     output = False
     if args.output:
@@ -52,7 +50,21 @@ def menu():
     all_results += sh.hacker_target_parser(domain)
     cl.logger.info("Hackertarget testing done")
     #get all the subdomains from wordlist
-    all_results += sh.from_wordlist(domain)
+    #ask for small, medium or large wordlist
+    if args.wordlist:
+        wordlist_size = args.wordlist
+    else:
+        wordlist_size = input("Wordlist size (small, medium, big): ")
+        while wordlist_size not in ["small", "medium", "big"]:
+            cl.logger.error("Invalid wordlist size")
+            wordlist_size = input("Wordlist size (small, medium, big): ")
+    #ask for how many threads to use for the wordlist
+    if args.wordlistThreads:
+        wordlist_thread_number = int(args.wordlistThreads)
+    else:
+        wordlist_thread_number = int(input("Enter number of threads to use for the wordlist scan: "))
+    cl.logger.info("Wordlist testing...")
+    all_results += sh.from_wordlist_thread(domain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
     cl.logger.info("Wordlist testing done")
     #delete all the occurences in the list
     cl.logger.info("Deleting occurences...")
@@ -91,8 +103,12 @@ def menu():
     final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
     #ask for how many thread to use
+    if args.ipThreads:
+        ip_thread_number = int(args.ipThreads)
+    else:
+        ip_thread_number = int(input("Enter number of threads to use for IP Scan: "))
     for ip, domains in final_dict_result.items():
-        ports_for_ip= ips.detect_open_port_thread(ip, thread_number)
+        ports_for_ip= ips.detect_open_port_thread(ip, ip_thread_number)
         for port in ports_for_ip:
             final_dict_result[ip]["ports"]={}
             final_dict_result[ip]["ports"][port]={}
@@ -107,7 +123,7 @@ def menu():
     cl.logger.info("Done")
     save = ""
     if not output:
-        while save.lower() != "y" or save.lower() != "n":
+        while save.lower() != "y" and save.lower() != "n":
             save = input("Do you want to save the result? (y/n): ")
     else:
         if output:

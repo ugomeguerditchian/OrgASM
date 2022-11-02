@@ -2,6 +2,7 @@ import requests
 from libs import result_parser as rp
 import json
 import socket
+import threading
 
 def hacker_target_parser(domain):
     #get all the subdomain of the domain from hackertarget
@@ -80,17 +81,17 @@ def alienvault_parser(domain):
 
 
 
-def from_wordlist(domain):
+def from_wordlist(domain, wordlist_chunks):
     #wordlist is Subdomain.txt
     #open the file
-    with open("wordlists/subdomains-1000.txt", "r") as file:
-        #read all the lines
-        lines = file.readlines()
+
     #test all the subdomains like {subdomain}.{domain}
     subdomains = []
-    for line in lines:
+    for line in wordlist_chunks:
+        #delete the \n
+        line = line.replace("\r", "")
         #loaading percentage
-        print(f"Wordlist testing : {str(round(lines.index(line) / len(lines) * 100, 2))}%", end="\r")
+        print(f"Wordlist testing : {str(round(wordlist_chunks.index(line) / len(wordlist_chunks) * 100, 2))}%", end="\r")
         request_to_test = line.strip() + "." + domain
         try:
             #try to connect to the subdomain
@@ -104,5 +105,30 @@ def from_wordlist(domain):
             subdomains.append(request_to_test)
         except:
             pass
-        subdomains = rp.delete_occurences(subdomains)
     return subdomains
+def divide_chunks(l, n):
+     
+    # looping till length l
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+def from_wordlist_thread(domain, thread_number, wordlist):
+    with open(wordlist, "r") as file:
+        #read all the lines
+        lines = file.readlines()
+    #delete all \n
+    lines = [line.replace("\n", "") for line in lines]
+    ranges= list(divide_chunks(lines, len(lines) // thread_number))
+    subdomains = []
+    threads = []
+    for i in ranges:
+        t = threading.Thread(target= lambda: subdomains.append(from_wordlist(domain, i)))
+        threads.append(t)
+        t.start()
+    for i in threads:
+        i.join()
+    final_subdomains = []
+    for i in subdomains:
+        final_subdomains += i
+    final_subdomains = rp.delete_occurences(final_subdomains)
+    return final_subdomains

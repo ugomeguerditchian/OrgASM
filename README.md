@@ -35,9 +35,9 @@ Install **ASMemble** with pip
 
 ## Roadmap
 
-- [ ] Service scanning amelioration
+- [~] Service scanning amelioration
 - [x] Args parse compatibility
-- [ ] Selection of little, medium or big subdomains wordlist for bruteforcing test
+- [X] Selection of little, medium or big subdomains wordlist for bruteforcing test
 - [ ] Recursive scan for subdomains bruteforcing
 - [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
 - [ ] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
