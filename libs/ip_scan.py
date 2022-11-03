@@ -1,65 +1,56 @@
 import socket
-import threading
+from socket import AF_INET
+from socket import SOCK_STREAM
+from socket import socket
+from socket import gethostbyname, getservbyport, create_connection
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
 def get_ip(domain):
     #get the ip address from the domain
     try :
-        ip = socket.gethostbyname(domain)
+        ip = gethostbyname(domain)
         return ip
     except:
         return None
 
-def detect_open_ports(ip, port_range):
-    #detect all the open ports from the ip address
-    #return a list of open ports
-    open_ports = []
-    for port in port_range:
-        #print(f"Port scan for {ip} : " + str(round(range(1, port_range).index(port) / len(range(1,65535)) * 100, 2)) + "%", end="\r")
-        #test if the port is open
+# returns True if a connection can be made, False otherwise
+def test_port_number(host, port):
+    # create and configure the socket
+    with socket(AF_INET, SOCK_STREAM) as sock:
+        # set a timeout of a few seconds
+        sock.settimeout(3)
+        # connecting may fail
         try:
-            #try to connect to the port with a timeout of 0.1 second
-            socket.create_connection((ip, port), 0.1)
-            #if the connection is successful, add the port to the list
-            open_ports.append(port)
+            # attempt to connect
+            sock.connect((host, port))
+            # a successful connection was made
+            return True
         except:
-            pass
+            # ignore the failure
+            return False
+    
+def port_scan(host, ports):
+    open_ports = []
+    print(f'Scanning {host}...')
+    # create the thread pool
+    with ThreadPoolExecutor(len(ports)) as executor:
+        # dispatch all tasks
+        results = executor.map(test_port_number, [host]*len(ports), ports)
+        # report results in order
+        for port,is_open in zip(ports,results):
+            if is_open:
+                print(f'> {host}:{port} open')
+                open_ports.append(port)
     return open_ports
-
-def divide_chunks(l, n):
-     
-    # looping till length l
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-def detect_open_port_thread(ip :str, thread_number :int):
-    #launch a thread for the def detect_open_ports
-    #divde the port range by the number of thread, cut the range and launch a thread for each range
-    #return a list of open ports
-    total_port= 65535
-    ranges= list(divide_chunks(range(1, total_port), total_port//thread_number))
-    threads= []
-    open_ports= []
-    for port_range in ranges:
-        #create a thread for each range
-        thread= threading.Thread(target= lambda :open_ports.append(detect_open_ports(ip, port_range)))
-        threads.append(thread)
-        thread.start()
-    for thread in threads:
-        #wait for all the threads to finish
-        thread.join()
-    final_list= []
-    for open_port in open_ports:
-        #add all the open ports to a final list
-        final_list+= open_port
-    return final_list
 
 def detect_service(ip, port):
     #detect the service from the ip address and the port
     #return the service
     try:
         #try to connect to the port
-        socket.create_connection((ip, port))
+        create_connection((ip, port))
         #if the connection is successful, get the service
-        service = socket.getservbyport(port)
+        service = getservbyport(port)
         return service
     except:
         return None
@@ -69,7 +60,7 @@ def detect_banner(ip, port):
     #return the banner
     try:
         #try to connect to the port
-        s = socket.create_connection((ip, port))
+        s = create_connection((ip, port))
         #if the connection is successful, get the banner
         banner = s.recv(1024)
         return banner

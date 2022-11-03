@@ -22,7 +22,18 @@ Install **ASMemble** with pip
   git clone https://github.com/ugomeguerditchian/ASMemble
   cd ASMemble
   pip install -r requirements.txt
-  python main.py -d <domain> -t <threads:Optional> -o <savefile:Bool>
+  usage: main.py [-h] [-d DOMAIN] [-w WORDLIST] [-wT WORDLISTTHREADS] [-o {True,False}]
+
+  options:
+    -h, --help            show this help message and exit
+    -d DOMAIN, --domain DOMAIN
+                          Domain to scan
+    -w WORDLIST, --wordlist WORDLIST
+                          Wordlist to use (small, medium(default), big)
+    -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
+                          Number of threads to use for Wordlist(default 500)
+    -o {True,False}, --output {True,False}
+                          Output save, default is False
 ```
 
 > :memo: **Note:** help with `python main.py -h`
@@ -35,7 +46,7 @@ Install **ASMemble** with pip
 
 ## Roadmap
 
-- [~] Service scanning amelioration
+- [ ] Service scanning amelioration
 - [x] Args parse compatibility
 - [X] Selection of little, medium or big subdomains wordlist for bruteforcing test
 - [ ] Recursive scan for subdomains bruteforcing

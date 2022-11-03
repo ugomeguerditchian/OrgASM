@@ -57,7 +57,7 @@ def service_recognizer(scan_dict :dict) -> dict:
                     with open("wordlists/tcp.csv", "r") as file:
                         csv_reader = csv.reader(file)
                         for row in csv_reader:
-                            if row[1] == port:
+                            if int(row[1]) == port:
                                 scan_dict[ip]["ports"][port]["service"] = row[2]
         except:
             pass

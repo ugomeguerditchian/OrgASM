@@ -17,7 +17,6 @@ def menu():
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
     argpars.add_argument("-w", "--wordlist", default="medium", required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, required=False, help="Number of threads to use for Wordlist(default 500)")
-    argpars.add_argument("-sT", "--ipThreads", default=300, required=False, help="Number of threads to use for IP scan(default 300)")
     argpars.add_argument("-o", "--output", choices=["True", "False"],required=False, default=False, help="Output save, default is False")
 
     args = argpars.parse_args()
@@ -102,17 +101,13 @@ def menu():
     cl.logger.info("Done")
     final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
-    #ask for how many thread to use
-    if args.ipThreads:
-        ip_thread_number = int(args.ipThreads)
-    else:
-        ip_thread_number = int(input("Enter number of threads to use for IP Scan: "))
     for ip, domains in final_dict_result.items():
-        ports_for_ip= ips.detect_open_port_thread(ip, ip_thread_number)
+        ports_for_ip= ips.port_scan(ip, range(65536))
+        #print loading
+        print("IP scanning : " + str(round(list(final_dict_result.keys()).index(ip) / len(final_dict_result.keys()) * 100, 2)) + "%", end="\r")
+        final_dict_result[ip]["ports"]={}
         for port in ports_for_ip:
-            final_dict_result[ip]["ports"]={}
             final_dict_result[ip]["ports"][port]={}
-            print(f"Port scan service for {ip} : " + str(round(ports_for_ip.index(port) / len(ports_for_ip) * 100, 2)) + "%" + " "*8, end="\r")
             final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
     
     cl.logger.info("IP scanning done")
@@ -140,5 +135,6 @@ def menu():
         cl.logger.info(f"File saved in exports/{file_name}")
     cl.logger.info("Exiting...")
 
-menu()
+if __name__ == "__main__":
+    menu()
 
