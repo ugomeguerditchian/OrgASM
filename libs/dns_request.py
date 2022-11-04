@@ -90,6 +90,31 @@ def delete_ip_from_list(subdomains :list) -> list:
             subdomains_without_ip.append(subdomain)
     return subdomains_without_ip
 
+def test_dns_zone_transfer(domain :str) -> list:
+    #test if the dns zone transfer is enable
+    #return a list of subdomain
+    subdomains = []
+    #get the dns server
+    dns_server = dns.resolver.resolve(domain, 'NS')
+    #test if the dns zone transfer is enable
+    for server in dns_server:
+        #get the dns server
+        server = str(server)
+        #split the dns server
+        server = server.split(" ")
+        #get the dns server
+        server = server[0]
+        #test if the dns zone transfer is enable
+        try:
+            #try to get the dns zone transfer
+            answers = dns.query.xfr(server, domain)
+            #if the dns zone transfer is enable, add the subdomain to the list
+            for answer in answers:
+                subdomains.append(answer)
+        except:
+            pass
+    return subdomains
+
 def main(domain):
     #get the dns information
     dns_information = get_dns_information(domain)

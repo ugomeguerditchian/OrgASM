@@ -3,6 +3,7 @@ from libs import sub_harvester as sh
 from libs import result_parser as rp
 from libs import ip_scan as ips
 from libs import custom_logger as cl
+from libs import domain_parser as dp
 import datetime
 import os
 import json
@@ -15,12 +16,14 @@ import argparse
 def menu():
     argpars = argparse.ArgumentParser()
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
-    argpars.add_argument("-w", "--wordlist", default="medium", required=False, help="Wordlist to use (small, medium(default), big)")
-    argpars.add_argument("-wT", "--wordlistThreads", default=500, required=False, help="Number of threads to use for Wordlist(default 500)")
-    argpars.add_argument("-iT", "--IPthreads", default=2000, required=False, help="Number of threads to use for DNS requests(default 2000)")
-    argpars.add_argument("-o", "--output", choices=["True", "False"],required=False, default=False, help="Output save, default is False")
+    argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
+    argpars.add_argument("-wT", "--wordlistThreads", default=500, type=int, required=False, help="Number of threads to use for Wordlist(default 500)")
+    argpars.add_argument("-iT", "--IPthreads", default=2000, type=int, required=False, help="Number of threads to use for DNS requests(default 2000)")
+    argpars.add_argument("-sT", "--SubdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
+    argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
+
     # help for argpars
     domain = ""
     if args.domain:
@@ -29,10 +32,7 @@ def menu():
         domain = input("Enter domain to scan: ")
     
 
-    
-    output = False
-    if args.output:
-        output = bool(args.output)
+    output = args.output
 
     final_dict_result = {}
     #ask for domain name
@@ -53,6 +53,8 @@ def menu():
     cl.logger.info("Crt.sh testing...")
     all_results += sh.crtsh_parser(domain)
     cl.logger.info("Crt.sh testing done")
+
+
     #get all the subdomains from wordlist
     #ask for small, medium or large wordlist
     if args.wordlist:
@@ -70,10 +72,18 @@ def menu():
     cl.logger.info("Wordlist testing...")
     all_results += sh.from_wordlist_thread(domain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
     cl.logger.info("Wordlist testing done")
+
+
     #delete all the occurences in the list
     cl.logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
+
+
     dns_result=[]
+    #check subdomains by accessing them with dp.detect_redirect
+    cl.logger.info("Checking subdomains...")
+    all_results += dp.detect_redirect_with_thread_limit(all_results, args.SubdomainsThreads)
+    cl.logger.info("Checking subdomains done")
     for result in all_results:
         print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "%", end="\r")
         #dns_request.main return a list
@@ -84,12 +94,16 @@ def menu():
     cl.logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
     cl.logger.info("All done")
+
+
     #clear the screen
     try :
         os.system("cls")
     except:
         #linux
         os.system("clear")
+
+    
     final_dict= rp.result_filter(all_results, domain)
     cl.logger.info(f"Subdomains containing {domain}:")
     for subdomain in final_dict["subdomain_withdomain"]:
@@ -104,6 +118,8 @@ def menu():
     cl.logger.info("IP sorting results:")
     pprint(ip_dict)
     cl.logger.info("Done")
+
+
     final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
     if args.IPthreads:
@@ -120,11 +136,15 @@ def menu():
             final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
     
     cl.logger.info("IP scanning done")
+
+
     cl.logger.info("IP scanning service analysis...")
     final_dict_result= rp.service_recognizer(final_dict_result)
     cl.logger.info("IP scanning results:")
     pprint(final_dict_result)
     cl.logger.info("Done")
+
+
     save = ""
     if not output:
         while save.lower() != "y" and save.lower() != "n":
