@@ -5,6 +5,10 @@ from socket import socket
 from socket import gethostbyname, getservbyport, create_connection
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Pool
+from libs import custom_logger
+logger = custom_logger.logger
+from pprint import pprint
+
 def get_ip(domain):
     #get the ip address from the domain
     try :
@@ -31,7 +35,7 @@ def test_port_number(host, port):
     
 def port_scan(host, ports):
     open_ports = []
-    print(f'Scanning {host}...')
+    logger.info(f'Scanning {host}...')
     # create the thread pool
     with ThreadPoolExecutor(len(ports)) as executor:
         # dispatch all tasks
@@ -39,15 +43,15 @@ def port_scan(host, ports):
         # report results in order
         for port,is_open in zip(ports,results):
             if is_open:
-                print(f'> {host}:{port} open')
                 open_ports.append(port)
+    pprint(open_ports)
     return open_ports
 
 def port_scan_with_thread_limit(host: str, ports, thread_number: int):
     #scan the host with the ports with a thread limit
     #return the open ports
     open_ports = []
-    print(f'Scanning {host}...')
+    logger.info(f'Scanning {host}...')
     # create the thread pool
     with ThreadPoolExecutor(thread_number) as executor:
         # dispatch all tasks
@@ -55,7 +59,7 @@ def port_scan_with_thread_limit(host: str, ports, thread_number: int):
         # report results in order
         for port,is_open in zip(ports,results):
             if is_open:
-                print(f'> {host}:{port} open')
+                logger.info(f'> {host}:{port} open')
                 open_ports.append(port)
     return open_ports
 

@@ -134,7 +134,7 @@ def from_wordlist(domain, wordlist_chunks):
         #delete the \n
         line = line.replace("\r", "")
         #loaading percentage
-        print(f"Wordlist testing : {str(round(wordlist_chunks.index(line) / len(wordlist_chunks) * 100, 2))}%", end="\r")
+        print(f"Wordlist testing : {str(round(wordlist_chunks.index(line) / len(wordlist_chunks) * 100, 2))}% ", end="\r")
         request_to_test = line.strip() + "." + domain
         try:
             #try to connect to the subdomain
