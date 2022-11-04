@@ -43,6 +43,23 @@ def port_scan(host, ports):
                 open_ports.append(port)
     return open_ports
 
+def port_scan_with_thread_limit(host: str, ports, thread_number: int):
+    #scan the host with the ports with a thread limit
+    #return the open ports
+    open_ports = []
+    print(f'Scanning {host}...')
+    # create the thread pool
+    with ThreadPoolExecutor(thread_number) as executor:
+        # dispatch all tasks
+        results = executor.map(test_port_number, [host]*len(ports), ports)
+        # report results in order
+        for port,is_open in zip(ports,results):
+            if is_open:
+                print(f'> {host}:{port} open')
+                open_ports.append(port)
+    return open_ports
+
+
 def detect_service(ip, port):
     #detect the service from the ip address and the port
     #return the service

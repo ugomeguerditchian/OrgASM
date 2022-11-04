@@ -17,6 +17,7 @@ def menu():
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
     argpars.add_argument("-w", "--wordlist", default="medium", required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, required=False, help="Number of threads to use for Wordlist(default 500)")
+    argpars.add_argument("-iT", "--IPthreads", default=2000, required=False, help="Number of threads to use for DNS requests(default 500)")
     argpars.add_argument("-o", "--output", choices=["True", "False"],required=False, default=False, help="Output save, default is False")
 
     args = argpars.parse_args()
@@ -48,6 +49,10 @@ def menu():
     cl.logger.info("Hackertarget testing...")
     all_results += sh.hacker_target_parser(domain)
     cl.logger.info("Hackertarget testing done")
+    #get all the subdomains from crt.sh
+    cl.logger.info("Crt.sh testing...")
+    all_results += sh.crtsh_parser(domain)
+    cl.logger.info("Crt.sh testing done")
     #get all the subdomains from wordlist
     #ask for small, medium or large wordlist
     if args.wordlist:
@@ -101,8 +106,12 @@ def menu():
     cl.logger.info("Done")
     final_dict_result= ip_dict
     cl.logger.info("IP scanning...")
+    if args.IPthreads:
+        ip_thread_number = int(args.IPthreads)
+    else:
+        ip_thread_number = int(input("Enter number of threads to use for the IP scan: "))
     for ip, domains in final_dict_result.items():
-        ports_for_ip= ips.port_scan(ip, range(65536))
+        ports_for_ip= ips.port_scan_with_thread_limit(ip, range(65536), ip_thread_number)
         #print loading
         print("IP scanning : " + str(round(list(final_dict_result.keys()).index(ip) / len(final_dict_result.keys()) * 100, 2)) + "%", end="\r")
         final_dict_result[ip]["ports"]={}

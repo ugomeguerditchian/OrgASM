@@ -7,7 +7,7 @@ A tool for automated ASM (Attack Surface Monitoring)
 
 ## Features
 
-- Obtaining results via [Alienvault](https://otx.alienvault.com/) and [Hackertarget](https://hackertarget.com/)
+- Obtaining results via [Alienvault](https://otx.alienvault.com/), [Hackertarget](https://hackertarget.com/) and [crt.sh](https://crt.sh/)
 - Subdomain Bruteforcing
 - DNS query
 - IP Sorting and scanning (Ports and services)
@@ -22,7 +22,7 @@ Install **ASMemble** with pip
   git clone https://github.com/ugomeguerditchian/ASMemble
   cd ASMemble
   pip install -r requirements.txt
-  usage: main.py [-h] [-d DOMAIN] [-w WORDLIST] [-wT WORDLISTTHREADS] [-o {True,False}]
+  usage: main.py [-h] [-d DOMAIN] [-w WORDLIST] [-wT WORDLISTTHREADS] [-iT IPTHREADS] [-o {True,False}]
 
   options:
     -h, --help            show this help message and exit
@@ -32,6 +32,8 @@ Install **ASMemble** with pip
                           Wordlist to use (small, medium(default), big)
     -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
                           Number of threads to use for Wordlist(default 500)
+    -iT IPTHREADS, --IPthreads IPTHREADS
+                          Number of threads to use for DNS requests(default 500)
     -o {True,False}, --output {True,False}
                           Output save, default is False
 ```
@@ -47,15 +49,15 @@ Install **ASMemble** with pip
 ## Roadmap
 
 - [ ] Service scanning amelioration
-- [x] Args parse compatibility
-- [X] Selection of little, medium or big subdomains wordlist for bruteforcing test
 - [ ] Recursive scan for subdomains bruteforcing
 - [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
 - [ ] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
 - [ ] Dorking test
 - [ ] Export map options
 - [ ] Possibility to add a list of already knows subdomains
-
+- [ ] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
+- [ ] Config file (yaml)
+- [ ] Choice for doing IP scan only on target associated with main domain
 ## Authors
 
 - [@ugomeguerditchian](https://github.com/ugomeguerditchian)
