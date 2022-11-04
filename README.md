@@ -3,7 +3,15 @@
 
 <h2 align="center">ASMemble</h2>
 
-A tool for automated ASM (Attack Surface Monitoring)
+A tool for automated ASM (Attack Surface Monitoring).
+
+ASMemble can detect subdomains, detect all ip related to them, scan all open ports and detect services.
+
+With the power of multi-threading it can be as fast as you want (and has you can) 🚀
+
+In the very next future it will be shodan and censys friendly 🙌
+
+We will also soon released the dorking compatibility and web parser 🥸
 
 ## Features
 
@@ -33,7 +41,7 @@ Install **ASMemble** with pip
     -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
                           Number of threads to use for Wordlist(default 500)
     -iT IPTHREADS, --IPthreads IPTHREADS
-                          Number of threads to use for DNS requests(default 500)
+                          Number of threads to use for IP Scanning(default 2000)
     -o {True,False}, --output {True,False}
                           Output save, default is False
 ```
@@ -49,6 +57,7 @@ Install **ASMemble** with pip
 ## Roadmap
 
 - [ ] Service scanning amelioration
+- [ ] Add DNS transfer zone test
 - [ ] Recursive scan for subdomains bruteforcing
 - [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
 - [ ] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
@@ -58,6 +67,7 @@ Install **ASMemble** with pip
 - [ ] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
 - [ ] Config file (yaml)
 - [ ] Choice for doing IP scan only on target associated with main domain
+- [ ] Add vulnerability scan
 ## Authors
 
 - [@ugomeguerditchian](https://github.com/ugomeguerditchian)
