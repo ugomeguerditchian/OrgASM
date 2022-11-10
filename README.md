@@ -56,11 +56,200 @@ Install **OrgASM** with pip
 
 > :memo: **Note:** help with `python main.py -h`
 
-## Screenshots
+## Exports Exemple for the commands : python main.py -d exemple.com
 
-![App Screenshot](./screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20095424.png)
+```json
 
-![App Screenshot2](./screenshots/Capture%20d%E2%80%99%C3%A9cran%202022-11-01%20100931.png)
+  {
+      "34.102.136.180": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "exemple.com",
+                  "www.exemple.com"
+              ],
+              "subdomain_withoutdomain": [
+                  "www.loimaylanh.vn"
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "66.81.199.53": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "fwdservice.com"
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "198.49.23.145": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "www.appgroup.ca"
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.203.230.10": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "e.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "193.0.14.129": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "k.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.33.4.12": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "c.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "199.9.14.201": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "b.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "198.97.190.53": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "h.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.112.36.4": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "g.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.58.128.30": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "j.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "199.7.91.13": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "d.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "198.41.0.4": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "a.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.36.148.17": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "i.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.5.5.241": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "f.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "202.12.27.33": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "m.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "199.7.83.42": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "l.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "208.73.211.70": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "208.73.211.70"
+              ]
+          },
+          "ports": {}
+      },
+      "198.185.159.144": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "appgroup.ca"
+              ]
+          },
+          "ports": {}
+      }
+  }
+
+```
 
 ## Roadmap
 
