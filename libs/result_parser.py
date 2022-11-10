@@ -60,8 +60,11 @@ def service_recognizer(scan_dict :dict) -> dict:
     for ip in scan_dict:
         try: 
             for port in scan_dict[ip]["ports"]:
-                if scan_dict[ip]["ports"][port] == None:
-                    scan_dict[ip]["ports"][port] = "Maybe :" + tcp_services[str(port)] if not tcp_services[str(port)] else "Unknown"    
+                if scan_dict[ip]["ports"][port] == None or scan_dict[ip]["ports"][port] == "null":
+                    if str(port) in tcp_services:
+                        scan_dict[ip]["ports"][port] = tcp_services[str(port)]
+                    else:
+                        scan_dict[ip]["ports"][port] = "Unknown"
         except:
             pass
     return scan_dict

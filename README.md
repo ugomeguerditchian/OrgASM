@@ -61,15 +61,53 @@ Install **OrgASM** with pip
 ```json
 
   {
-      "34.102.136.180": {
+      "151.101.120.223": {
           "subdomains": {
               "subdomain_withdomain": [
-                  "exemple.com",
-                  "www.exemple.com"
+                  "www.python.org",
+                  "peps.python.org"
               ],
-              "subdomain_withoutdomain": [
-                  "www.loimaylanh.vn"
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "pypi.python.org",
+                  "docs.python.org"
+              ]
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "104.17.33.82": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "devguide.python.org"
               ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https",
+              "2052": "clearvisn",
+              "2053": "knetd",
+              "2082": "infowave",
+              "2083": "radsec",
+              "2086": "gnunet",
+              "2087": "eli",
+              "2095": "nbx-ser",
+              "2096": "nbx-dir",
+              "8080": "http-alt",
+              "8443": "pcsync-https",
+              "8880": "cddbp-alt"
+          }
+      },
+      "184.105.176.47": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "discuss.python.org"
+              ],
+              "subdomain_withoutdomain": [],
               "subdomain_with_redirect": []
           },
           "ports": {
@@ -77,141 +115,373 @@ Install **OrgASM** with pip
               "443": "https"
           }
       },
-      "66.81.199.53": {
+      "46.4.94.207": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "hg.es.python.org",
+                  "documentos-asociacion.es.python.org",
+                  "calendario.es.python.org",
+                  "openbadges.es.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "lists.es.python.org"
+              ]
+          },
+          "ports": {
+              "22": "ssh",
+              "53": "domain",
+              "80": "http",
+              "443": "https",
+              "465": "submissions",
+              "587": "submission",
+              "993": "imaps",
+              "2222": "EtherNet/IP-1",
+              "8088": "radan-http",
+              "14938": "Unknown",
+              "16761": "Unknown",
+              "23878": "Unknown",
+              "24272": "Unknown",
+              "24304": "Unknown",
+              "24478": "Unknown",
+              "25955": "",
+              "28443": "Unknown",
+              "30416": "Unknown",
+              "31588": "Unknown",
+              "36641": "Unknown",
+              "39499": "Unknown",
+              "43490": "Unknown",
+              "44650": "Unknown"
+          }
+      },
+      "52.215.192.133": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "status.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "138.197.63.241": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "svn.python.org",
+                  "console.python.org",
+                  "legacy.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "python.org",
+                  "jobs.python.org",
+                  "planet.python.org",
+                  "cheeseshop.python.org",
+                  "packages.python.org"
+              ]
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "185.199.111.153": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "es.python.org",
+                  "comunidades.es.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "185.199.109.153": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "hacktoberfest.es.python.org",
+                  "pycon-archive.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "www.es.python.org"
+              ]
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "151.101.120.175": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "downloads.python.org",
+                  "blog.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "doc.python.org",
+                  "warehouse.python.org",
+                  "testpypi.python.org"
+              ]
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "161.35.181.181": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "wiki.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "buildbot.python.org"
+              ]
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https",
+              "9020": "tambora",
+              "20000": "dnp",
+              "20003": "commtact-https",
+              "20004": "Unknown",
+              "20005": "openwebnet",
+              "20006": "Unknown",
+              "20010": "Unknown",
+              "20100": "Unknown"
+          }
+      },
+      "34.201.80.84": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "staging.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "23.22.5.68": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "education.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "3.10.218.93": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "chat.uk.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "54.227.157.72": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "africa.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "159.203.120.55": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "speed.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https",
+              "9020": "tambora",
+              "20000": "dnp",
+              "20003": "commtact-https",
+              "20004": "Unknown",
+              "20005": "openwebnet",
+              "20006": "Unknown",
+              "20010": "Unknown",
+              "20100": "Unknown"
+          }
+      },
+      "52.56.203.177": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "membership.uk.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https",
+              "2222": "EtherNet/IP-1",
+              "4455": "prchat-user",
+              "4456": "prchat-server"
+          }
+      },
+      "104.198.14.52": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "uk.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "51.15.237.199": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "comunidad.es.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "185.199.108.153": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "community.uk.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "134.209.40.52": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "planetpython.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "188.166.48.69": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "bugs.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "22": "ssh",
+              "80": "http",
+              "443": "https",
+              "465": "submissions",
+              "587": "submission"
+          }
+      },
+      "142.250.179.83": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "blog-ko.python.org",
+                  "blog-ja.python.org",
+                  "blog-pt.python.org",
+                  "blog-de.python.org",
+                  "blog-es.python.org",
+                  "blog-ru.python.org",
+                  "blog-tw.python.org",
+                  "blog-fr.python.org",
+                  "blog-ro.python.org",
+                  "blog-cn.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https"
+          }
+      },
+      "140.211.10.69": {
+          "subdomains": {
+              "subdomain_withdomain": [
+                  "front.python.org"
+              ],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": []
+          },
+          "ports": {
+              "80": "http",
+              "443": "https",
+              "6443": "sun-sr-https"
+          }
+      },
+      "151.101.128.223": {
           "subdomains": {
               "subdomain_withdomain": [],
               "subdomain_withoutdomain": [
-                  "fwdservice.com"
+                  "pypi.org"
               ],
               "subdomain_with_redirect": []
           },
           "ports": {}
       },
-      "198.49.23.145": {
+      "151.101.121.63": {
           "subdomains": {
               "subdomain_withdomain": [],
               "subdomain_withoutdomain": [
-                  "www.appgroup.ca"
+                  "test.pypi.org"
               ],
               "subdomain_with_redirect": []
           },
           "ports": {}
       },
-      "192.203.230.10": {
+      "151.101.65.63": {
           "subdomains": {
               "subdomain_withdomain": [],
               "subdomain_withoutdomain": [
-                  "e.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "193.0.14.129": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "k.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "192.33.4.12": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "c.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "199.9.14.201": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "b.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "198.97.190.53": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "h.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "192.112.36.4": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "g.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "192.58.128.30": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "j.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "199.7.91.13": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "d.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "198.41.0.4": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "a.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "192.36.148.17": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "i.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "192.5.5.241": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "f.root-servers.net."
-              ],
-              "subdomain_with_redirect": []
-          },
-          "ports": {}
-      },
-      "202.12.27.33": {
-          "subdomains": {
-              "subdomain_withdomain": [],
-              "subdomain_withoutdomain": [
-                  "m.root-servers.net."
+                  "pythonhosted.org"
               ],
               "subdomain_with_redirect": []
           },
@@ -227,22 +497,162 @@ Install **OrgASM** with pip
           },
           "ports": {}
       },
-      "208.73.211.70": {
+      "199.7.91.13": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "d.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "193.0.14.129": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "k.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.58.128.30": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "j.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "202.12.27.33": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "m.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "198.97.190.53": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "h.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.36.148.17": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "i.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "199.9.14.201": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "b.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.5.5.241": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "f.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "198.41.0.4": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "a.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.203.230.10": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "e.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.112.36.4": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "g.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "192.33.4.12": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [
+                  "c.root-servers.net."
+              ],
+              "subdomain_with_redirect": []
+          },
+          "ports": {}
+      },
+      "104.17.32.82": {
           "subdomains": {
               "subdomain_withdomain": [],
               "subdomain_withoutdomain": [],
               "subdomain_with_redirect": [
-                  "208.73.211.70"
+                  "packaging.python.org"
               ]
           },
           "ports": {}
       },
-      "198.185.159.144": {
+      "188.166.95.178": {
           "subdomains": {
               "subdomain_withdomain": [],
               "subdomain_withoutdomain": [],
               "subdomain_with_redirect": [
-                  "appgroup.ca"
+                  "mail.python.org"
+              ]
+          },
+          "ports": {}
+      },
+      "163.172.190.132": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "socios.es.python.org"
+              ]
+          },
+          "ports": {}
+      },
+      "138.197.54.234": {
+          "subdomains": {
+              "subdomain_withdomain": [],
+              "subdomain_withoutdomain": [],
+              "subdomain_with_redirect": [
+                  "hg.python.org"
               ]
           },
           "ports": {}
