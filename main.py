@@ -151,7 +151,7 @@ def menu():
 
     logger.info("IP scanning done")
     logger.info("IP scanning service analysis...")
-    # final_dict_result= rp.service_recognizer(final_dict_result)
+    final_dict_result= rp.service_recognizer(final_dict_result)
     logger.info("IP scanning results:")
     pprint(final_dict_result)
     logger.info("Done")

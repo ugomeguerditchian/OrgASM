@@ -49,7 +49,7 @@ def port_scan(host, ports):
     pprint(open_ports)
     return open_ports
 
-def port_scan_with_thread_limit(host: str, ports, thread_number: int):
+def port_scan_with_thread_limit(host: str, ports:range, thread_number: int):
     #scan the host with the ports with a thread limit
     #return the open ports
     open_ports = []

@@ -34,13 +34,17 @@ def service_recognizer(scan_dict :dict) -> dict:
     #open the file with all the services in wordlists/tcp.csv
     #the csv file is in the format:
     """
-    "protocol","port","description"
-    "TCP",0,"Reserved"
+    Service Name,Port Number,Transport Protocol,Description,Assignee,Contact,Registration Date,Modification Date,Reference,Service Code,Unauthorized Use Reported,Assignment Notes
+
     """
-    #convert to dict in the format :
-    """
-    0: "Reserved"
-    """
+    #get only service name and port number for tcp
+    tcp_services = {}
+    with open("wordlists/service-names-port-numbers.csv", "r") as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[2] == "tcp":
+                tcp_services[row[1]] = row[0]
+
     #scan_dict is in the format:
     """
     1.1.1.1{
@@ -56,12 +60,8 @@ def service_recognizer(scan_dict :dict) -> dict:
     for ip in scan_dict:
         try: 
             for port in scan_dict[ip]["ports"]:
-                if scan_dict[ip]["ports"][port]["service"] == None:
-                    with open("wordlists/tcp.csv", "r") as file:
-                        csv_reader = csv.reader(file)
-                        for row in csv_reader:
-                            if int(row[1]) == port:
-                                scan_dict[ip]["ports"][port]["service"] = row[2]
+                if scan_dict[ip]["ports"][port] == None:
+                    scan_dict[ip]["ports"][port] = "Maybe :" + tcp_services[str(port)] if not tcp_services[str(port)] else "Unknown"    
         except:
             pass
     return scan_dict
