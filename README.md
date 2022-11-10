@@ -56,7 +56,7 @@ Install **OrgASM** with pip
 
 > :memo: **Note:** help with `python main.py -h`
 
-## Exports Exemple for the commands : python main.py -d exemple.com
+## Exports Exemple for the commands : python main.py -d python.org
 
 ```json
 
