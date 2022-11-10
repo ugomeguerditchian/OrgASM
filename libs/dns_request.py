@@ -3,6 +3,9 @@ import dns.resolver
 import requests
 import socket
 import json
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
+
 
 def get_dns_information(domain):
     #get the dns information of the domain with dnspyton
@@ -44,6 +47,15 @@ def get_dns_information(domain):
             dns_informations.append(rdata)
     except:
         pass
+    return dns_informations
+
+def get_dns_informations_thread(domain :str, threads_number:int) :
+    dns_informations=[]
+
+    with ThreadPoolExecutor(max_workers=threads_number) as executor:
+        results = executor.map(get_dns_information, domain)
+        for result in results:
+            dns_informations+= result
     return dns_informations
 
 def detect_subdomain(dns_information :list) -> list:
@@ -115,9 +127,9 @@ def test_dns_zone_transfer(domain :str) -> list:
             pass
     return subdomains
 
-def main(domain):
+def main(domain, threads_number):
     #get the dns information
-    dns_information = get_dns_information(domain)
+    dns_information = get_dns_informations_thread(domain, threads_number)
     #detect all the subdomain
     subdomains = detect_subdomain(dns_information)
     #detect all the real subdomain

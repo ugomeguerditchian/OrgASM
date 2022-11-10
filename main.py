@@ -19,8 +19,10 @@ def menu():
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
     argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, type=int, required=False, help="Number of threads to use for Wordlist(default 500)")
-    argpars.add_argument("-iT", "--IPthreads", default=2000, type=int, required=False, help="Number of threads to use for DNS requests(default 2000)")
-    argpars.add_argument("-sT", "--SubdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
+    argpars.add_argument("-dT", "--dnsThreads", default=500, type=int, required=False, help="Number of threads to use for DNS query(default 500)")
+    argpars.add_argument("-iS", "--IPScanType", default="W", type=str, required=False, help="Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected")
+    argpars.add_argument("-iT", "--IPthreads", default=2000, type=int, required=False, help="Number of threads to use for IP scan(default 2000)")
+    argpars.add_argument("-sT", "--subdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
     argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
@@ -81,13 +83,16 @@ def menu():
     dns_result=[]
     #check subdomains by accessing them with dp.detect_redirect
     cl.logger.info("Checking subdomains...")
-    all_results += dp.detect_redirect_with_thread_limit(all_results, args.SubdomainsThreads)
+    subdomains_with_redirect=[]
+    temp_all_results = []
+    temp_all_results, subdomains_with_redirect = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
+    all_results += temp_all_results
     cl.logger.info("Checking subdomains done")
     for result in all_results:
         print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
         #dns_request.main return a list
         #join all the list in one list
-        dns_result += dns_request.main(result)
+        dns_result += dns_request.main(result, args.dnsThreads)
     all_results+= dns_result
     logger.info("DNS testing done")
     logger.info("Deleting occurences...")
@@ -101,38 +106,59 @@ def menu():
         os.system("clear")
 
     
-    final_dict= rp.result_filter(all_results, domain)
+    final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect)
     logger.info(f"Subdomains containing {domain}:")
     for subdomain in final_dict["subdomain_withdomain"]:
         print(subdomain)
     logger.info(f"Subdomains not containing {domain}:")
     for subdomain in final_dict["subdomain_withoutdomain"]:
         print(subdomain)
+    logger.info(f"Subdomains with redirect detected :")
+    for subdomain in final_dict["subdomain_with_redirect"]:
+        print(subdomain)
     
     logger.info("IP sorting...")
-    ip_dict = ips.get_all_ip(all_results, domain)
+    ip_dict = ips.get_all_ip(final_dict, domain)
     logger.info("IP sorting done")
     logger.info("IP sorting results:")
     pprint(ip_dict)
     logger.info("Done")
     final_dict_result= ip_dict
+
     logger.info("IP scanning...")
-    if args.IPthreads:
-        ip_thread_number = int(args.IPthreads)
-    else:
-        ip_thread_number = int(input("Enter number of threads to use for the IP scan: "))
-    for ip, domains in final_dict_result.items():
-        ports_for_ip= ips.port_scan_with_thread_limit(ip, range(65536), ip_thread_number)
-        #print loading
-        # print("IP scanning : " + str(round(list(final_dict_result.keys()).index(ip) / len(final_dict_result.keys()) * 100, 2)) + "%", end="\r")
-        final_dict_result[ip]["ports"]={}
-        for port in ports_for_ip:
-            final_dict_result[ip]["ports"][port]={}
-            final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
+
+    if args.IPScanType == "W":
+        for ip in final_dict_result :
+            if final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
+                open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
+                for port in open_ports:
+                    final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
+    elif args.IPScanType == "WR":
+        for ip in final_dict_result :
+            if final_dict_result[ip]["subdomains"]["subdomain_with_redirect"] != [] or final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
+                open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
+                for port in open_ports:
+                    final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
+    elif args.IPScanType == "A":
+        for ip in final_dict_result :
+            open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
+            for port in open_ports:
+                final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
+
+
+    # ip_thread_number = int(args.IPthreads)
+    # for ip, domains in final_dict_result.items():
+    #     ports_for_ip= ips.port_scan_with_thread_limit(ip, range(65536), ip_thread_number)
+    #     #print loading
+    #     # print("IP scanning : " + str(round(list(final_dict_result.keys()).index(ip) / len(final_dict_result.keys()) * 100, 2)) + "%", end="\r")
+    #     final_dict_result[ip]["ports"]={}
+    #     for port in ports_for_ip:
+    #         final_dict_result[ip]["ports"][port]={}
+    #         final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
     
     logger.info("IP scanning done")
     logger.info("IP scanning service analysis...")
-    final_dict_result= rp.service_recognizer(final_dict_result)
+    # final_dict_result= rp.service_recognizer(final_dict_result)
     logger.info("IP scanning results:")
     pprint(final_dict_result)
     logger.info("Done")

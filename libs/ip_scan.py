@@ -21,6 +21,8 @@ def get_ip(domain):
 def test_port_number(host, port):
     # create and configure the socket
     with socket(AF_INET, SOCK_STREAM) as sock:
+        if port == 554 :
+            pass
         # set a timeout of a few seconds
         sock.settimeout(3)
         # connecting may fail
@@ -88,29 +90,68 @@ def detect_banner(ip, port):
     except:
         return None
 
-def get_all_ip(subdomains: list, domain :str):
+def get_all_ip(subdomains: dict, domain :str):
     #for all subdomains ping them and retrive their ip address
     #return a dict with ip address as key and subdomains as value
+    
     """
+    subdomains = {
+        "subdomain_withdomain": [],
+        "subdomain_withoutdomain": [],
+        "subdomain_with_redirect": []
     dict = {
-        "ip"{
-            subdomains: ["subdomain1", "subdomain2", "subdomain3"]
-            }
+            "ip1": {
+                "subdomains"{
+                    "subdomain_withdomain": [],
+                    "subdomain_withoutdomain": [],
+                    "subdomain_with_redirect": []
+                }
+                "ports": {
+                    "port1": {
+                        "state": "open",
+                        "service": "http"
+        }
     }
     """
 
     dict = {}
-    for subdomain in subdomains:
-        #ping the subdomain
+    for subdomain in subdomains["subdomain_withdomain"]:
         ip = get_ip(subdomain)
-        if ip is not None:
-            #if the subdomain has an ip address
-            if ip in dict:
-                #if the ip address is already in the dict, add the subdomain to the list
-                dict[ip]["subdomains"].append(subdomain)
-            else:
-                #if the ip address is not in the dict, add the ip address to the dict
-                dict[ip] = {"subdomains": [subdomain]}
-        else:
-            pass
+        if ip:
+            if ip not in dict:
+                dict[ip] = {
+                    "subdomains": {
+                        "subdomain_withdomain": [],
+                        "subdomain_withoutdomain": [],
+                        "subdomain_with_redirect": []
+                    },
+                    "ports": {}
+                }
+            dict[ip]["subdomains"]["subdomain_withdomain"].append(subdomain)
+    for subdomain in subdomains["subdomain_withoutdomain"]:
+        ip = get_ip(subdomain)
+        if ip:
+            if ip not in dict:
+                dict[ip] = {
+                    "subdomains": {
+                        "subdomain_withdomain": [],
+                        "subdomain_withoutdomain": [],
+                        "subdomain_with_redirect": []
+                    },
+                    "ports": {}
+                }
+            dict[ip]["subdomains"]["subdomain_withoutdomain"].append(subdomain)
+    for subdomain in subdomains["subdomain_with_redirect"]:
+        ip = get_ip(subdomain)
+        if ip:
+            if ip not in dict:
+                dict[ip] = {
+                    "subdomains": {
+                        "subdomain_withdomain": [],
+                        "subdomain_withoutdomain": [],
+                        "subdomain_with_redirect": []
+                    },
+                    "ports": {}
+                }
+            dict[ip]["subdomains"]["subdomain_with_redirect"].append(subdomain)
     return dict

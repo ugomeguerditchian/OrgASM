@@ -16,15 +16,17 @@ def detect_redirect(url: str) -> bool:
 
 def detect_redirect_with_thread_limit(subdomains: list, thread_number: int) -> list:
     real_subdomains = []
+    subdomains_with_redirect = []
     with ThreadPoolExecutor(thread_number) as executor:
         results = executor.map(detect_redirect, subdomains)
         for subdomain, is_redirect in zip(subdomains, results):
             if is_redirect:
                 print(f'> {subdomain} is a redirect')
+                subdomains_with_redirect.append(subdomain)
             else:
                 print(f'> {subdomain} is not a redirect')
                 real_subdomains.append(subdomain)
-    return real_subdomains
+    return real_subdomains, subdomains_with_redirect
 
 
 def check_up(url: str) -> bool:

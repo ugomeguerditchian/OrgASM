@@ -33,8 +33,12 @@ def hacker_target_parser(domain):
 
 def crtsh_parser(domain):
     #get all the subdomain of the domain from crtsh
-    url= f"https://crt.sh/?q={domain}.fr&output=json"
-    response = requests.get(url)
+    url= f"https://crt.sh/?q={domain}&output=json"
+    #user agent firefox
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"
+    }
+    response = requests.get(url, headers=headers)
     #response is a json format
     #convert response.text in json
     json_data = json.loads(response.text)
