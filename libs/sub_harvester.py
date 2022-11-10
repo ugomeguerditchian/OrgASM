@@ -3,6 +3,9 @@ from libs import result_parser as rp
 import json
 import socket
 import threading
+from libs import custom_logger
+logger = custom_logger.logger
+
 
 def hacker_target_parser(domain):
     #get all the subdomain of the domain from hackertarget
@@ -38,46 +41,49 @@ def crtsh_parser(domain):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"
     }
-    response = requests.get(url, headers=headers)
-    #response is a json format
-    #convert response.text in json
-    json_data = json.loads(response.text)
-    """
-    Example of json_data from crtsh :
-    [
-    {
-        "issuer_ca_id": 183267,
-        "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
-        "common_name": "www.anne.fage.fr",
-        "name_value": "anne.fage.fr\nwww.anne.fage.fr",
-        "id": 7882196717,
-        "entry_timestamp": "2022-11-01T21:06:38.933",
-        "not_before": "2022-11-01T20:06:38",
-        "not_after": "2023-01-30T20:06:37",
-        "serial_number": "030da3a68189369d6475a61ad5ec6618a11c"
-    },
-    {
-        "issuer_ca_id": 183267,
-        "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
-        "common_name": "www.anne.fage.fr",
-        "name_value": "anne.fage.fr\nwww.anne.fage.fr",
-        "id": 7882190984,
-        "entry_timestamp": "2022-11-01T21:06:38.353",
-        "not_before": "2022-11-01T20:06:38",
-        "not_after": "2023-01-30T20:06:37",
-        "serial_number": "030da3a68189369d6475a61ad5ec6618a11c"
-    }]
-    """
-    #get all the common_name and name_value
-    subdomains = []
-    for item in json_data:
-        subdomains.append(item["common_name"])
-        #split name_value in lines
-        lines = item["name_value"].split("\n")
-        for line in lines:
-            subdomains.append(line)
-    return subdomains
-
+    try :
+        response = requests.get(url, headers=headers)
+        #response is a json format
+        #convert response.text in json
+        json_data = json.loads(response.text)
+        """
+        Example of json_data from crtsh :
+        [
+        {
+            "issuer_ca_id": 183267,
+            "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
+            "common_name": "www.anne.fage.fr",
+            "name_value": "anne.fage.fr\nwww.anne.fage.fr",
+            "id": 7882196717,
+            "entry_timestamp": "2022-11-01T21:06:38.933",
+            "not_before": "2022-11-01T20:06:38",
+            "not_after": "2023-01-30T20:06:37",
+            "serial_number": "030da3a68189369d6475a61ad5ec6618a11c"
+        },
+        {
+            "issuer_ca_id": 183267,
+            "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
+            "common_name": "www.anne.fage.fr",
+            "name_value": "anne.fage.fr\nwww.anne.fage.fr",
+            "id": 7882190984,
+            "entry_timestamp": "2022-11-01T21:06:38.353",
+            "not_before": "2022-11-01T20:06:38",
+            "not_after": "2023-01-30T20:06:37",
+            "serial_number": "030da3a68189369d6475a61ad5ec6618a11c"
+        }]
+        """
+        #get all the common_name and name_value
+        subdomains = []
+        for item in json_data:
+            subdomains.append(item["common_name"])
+            #split name_value in lines
+            lines = item["name_value"].split("\n")
+            for line in lines:
+                subdomains.append(line)
+        return subdomains
+    except Exception as e:
+        logger.error("Impossible to get subdomains from crtsh")
+        return []
 def alienvault_parser(domain):
     #get all the subdomain of the domain from alienvault
     #url https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns

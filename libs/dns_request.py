@@ -11,6 +11,8 @@ def get_dns_information(domain):
     #get the dns information of the domain with dnspyton
     #return a list of dns information
     dns_informations= []
+    #set timeout to 0.2 seconds
+    socket.setdefaulttimeout(0.2)
     try:
         answers = dns.resolver.resolve(domain, 'NS')
         for rdata in answers:
@@ -42,6 +44,7 @@ def get_dns_information(domain):
     except:
         pass
     try :
+        #get the dns information
         answers = dns.resolver.resolve(domain, 'TXT')
         for rdata in answers:
             dns_informations.append(rdata)

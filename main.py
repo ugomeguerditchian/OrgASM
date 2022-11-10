@@ -86,7 +86,10 @@ def menu():
     subdomains_with_redirect=[]
     temp_all_results = []
     temp_all_results, subdomains_with_redirect = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
-    all_results += temp_all_results
+    all_results = temp_all_results
+    # for subdomain in all_results:
+    #     if ips.get_ip(subdomain) :
+    #         all_results.remove(subdomain)
     cl.logger.info("Checking subdomains done")
     for result in all_results:
         print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
@@ -146,16 +149,6 @@ def menu():
                 final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
 
 
-    # ip_thread_number = int(args.IPthreads)
-    # for ip, domains in final_dict_result.items():
-    #     ports_for_ip= ips.port_scan_with_thread_limit(ip, range(65536), ip_thread_number)
-    #     #print loading
-    #     # print("IP scanning : " + str(round(list(final_dict_result.keys()).index(ip) / len(final_dict_result.keys()) * 100, 2)) + "%", end="\r")
-    #     final_dict_result[ip]["ports"]={}
-    #     for port in ports_for_ip:
-    #         final_dict_result[ip]["ports"][port]={}
-    #         final_dict_result[ip]["ports"][port]["service"]= ips.detect_service(ip, port)
-    
     logger.info("IP scanning done")
     logger.info("IP scanning service analysis...")
     # final_dict_result= rp.service_recognizer(final_dict_result)
