@@ -18,6 +18,7 @@ def menu():
     argpars = argparse.ArgumentParser()
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
     argpars.add_argument("-sF", "--subfile", required=False, help="Path to file with subdomains, one per line")
+    argpars.add_argument("-R", "--recursive", required=False, default=1, type= int, help="Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0")
     argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, type=int, required=False, help="Number of threads to use for Wordlist(default 500)")
     argpars.add_argument("-dT", "--dnsThreads", default=500, type=int, required=False, help="Number of threads to use for DNS query(default 500)")
@@ -80,13 +81,92 @@ def menu():
     #delete all the occurences in the list
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
+    logger.info(all_results)
+    #clear the screen
+    try :
+        os.system("cls")
+    except:
+        # linux
+        os.system("clear")
 
+    if args.recursive > 0:
+        temp_all_results = []
+        new_subdomains=[]
+        while True :
+            for subdomain in all_results :
+                try :
+                    os.system("cls")
+                except:
+                    # linux
+                    os.system("clear")
+
+                logger.info(f"Recursive scan of {subdomain} | {all_results.index(subdomain)}/{len(all_results)}")
+                logger.info("Alienvault testing...")
+                temp_all_results += sh.alienvault_parser(subdomain)
+                logger.info("Alienvault testing done")
+                logger.info("Hackertarget testing...")
+                temp_all_results += sh.hacker_target_parser(subdomain)
+                logger.info("Hackertarget testing done")
+                logger.info("Crt.sh testing...")
+                temp_all_results += sh.crtsh_parser(subdomain)
+                logger.info("Crt.sh testing done")
+                logger.info("Wordlist testing...")
+                temp_all_results += sh.from_wordlist_thread(subdomain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
+                logger.info("Wordlist testing done")
+                temp_all_results = rp.delete_occurences(temp_all_results)
+            if temp_all_results != all_results :
+                #get new subdomains and add them to the list
+                for subdomain in temp_all_results:
+                    if subdomain not in all_results:
+                        new_subdomains.append(subdomain)
+                all_results += new_subdomains
+            else :
+                logger.info("No new subdomains found")
+                logger.info("Exiting recursive scan")
+                break
+            for i in range(args.recursive-1) :
+                temp_all_results = []
+                for subdomain in new_subdomains :
+                    try :
+                        os.system("cls")
+                    except:
+                        # linux
+                        os.system("clear")
+
+                    logger.info(f"Recursive scan of {subdomain} | {new_subdomains.index(subdomain)}/{len(new_subdomains)}")
+                    logger.info("Alienvault testing...")
+                    temp_all_results += sh.alienvault_parser(subdomain)
+                    logger.info("Alienvault testing done")
+                    logger.info("Hackertarget testing...")
+                    temp_all_results += sh.hacker_target_parser(subdomain)
+                    logger.info("Hackertarget testing done")
+                    logger.info("Crt.sh testing...")
+                    temp_all_results += sh.crtsh_parser(subdomain)
+                    logger.info("Crt.sh testing done")
+                    logger.info("Wordlist testing...")
+                    temp_all_results += sh.from_wordlist_thread(subdomain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
+                    logger.info("Wordlist testing done")
+                    temp_all_results = rp.delete_occurences(temp_all_results)
+                if temp_all_results != new_subdomains :
+                    #get new subdomains and add them to the list
+                    for subdomain in temp_all_results:
+                        if subdomain not in new_subdomains:
+                            new_subdomains.append(subdomain)
+                else :
+                    logger.info("No new subdomains found")
+                    logger.info("Exiting recursive scan")
+                    break
+            all_results += new_subdomains
+            logger.info("Recursive scan done")
+            break
+    all_results = rp.delete_occurences(all_results)
     dns_result=[]
     #check subdomains by accessing them with dp.detect_redirect
     cl.logger.info("Checking subdomains...")
     subdomains_with_redirect=[]
     temp_all_results = []
-    temp_all_results, subdomains_with_redirect = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
+    dead_subdomains = []
+    temp_all_results, subdomains_with_redirect, dead_subdomains = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
     all_results = temp_all_results
 
     cl.logger.info("Checking subdomains done")
@@ -100,15 +180,8 @@ def menu():
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
     logger.info("All done")
-    #clear the screen
-    try :
-        os.system("cls")
-    except:
-        # linux
-        os.system("clear")
 
-    
-    final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect)
+    final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect, dead_subdomains)
     logger.info(f"Subdomains containing {domain}:")
     for subdomain in final_dict["subdomain_withdomain"]:
         print(subdomain)
@@ -118,7 +191,10 @@ def menu():
     logger.info(f"Subdomains with redirect detected :")
     for subdomain in final_dict["subdomain_with_redirect"]:
         print(subdomain)
+    for subdomain in final_dict["dead_subdomains"]:
+        print(subdomain)
     
+
     logger.info("IP sorting...")
     ip_dict = ips.get_all_ip(final_dict, domain)
     logger.info("IP sorting done")
@@ -126,7 +202,6 @@ def menu():
     pprint(ip_dict)
     logger.info("Done")
     final_dict_result= ip_dict
-
     logger.info("IP scanning...")
 
     if args.IPScanType == "W":

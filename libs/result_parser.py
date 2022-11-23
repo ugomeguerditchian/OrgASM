@@ -8,7 +8,7 @@ def delete_occurences(list : list):
             new_list.append(i)
     return new_list
 
-def result_filter(list : list, domain : str, subdomain_with_redirect:list) -> dict :
+def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_subdomains:list) -> dict :
     #from the list of sudbomains return all subomains containing the domain
     """
     dict = {
@@ -20,7 +20,8 @@ def result_filter(list : list, domain : str, subdomain_with_redirect:list) -> di
     dict = {
         "subdomain_withdomain": [],
         "subdomain_withoutdomain": [],
-        "subdomain_with_redirect": []
+        "subdomain_with_redirect": [],
+        "dead_subdomains": []
     }
     for subdomain in list:
         if domain in subdomain:
@@ -28,6 +29,7 @@ def result_filter(list : list, domain : str, subdomain_with_redirect:list) -> di
         else:
             dict["subdomain_withoutdomain"].append(subdomain)
     dict["subdomain_with_redirect"] = subdomain_with_redirect
+    dict["dead_subdomains"] = dead_subdomains
     return dict
 
 def service_recognizer(scan_dict :dict) -> dict:

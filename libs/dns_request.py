@@ -13,12 +13,12 @@ def get_dns_information(domain):
     dns_informations= []
     #set timeout to 0.2 seconds
     socket.setdefaulttimeout(0.2)
-    try:
-        answers = dns.resolver.resolve(domain, 'NS')
-        for rdata in answers:
-            dns_informations.append(rdata)
-    except:
-        pass
+    # try:
+    #     answers = dns.resolver.resolve(domain, 'NS')
+    #     for rdata in answers:
+    #         dns_informations.append(rdata)
+    # except:
+    #     pass
     try :
         answers = dns.resolver.resolve(domain, 'MX')
         for rdata in answers:
