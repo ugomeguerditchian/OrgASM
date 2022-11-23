@@ -30,27 +30,28 @@ Install **OrgASM** with pip
   git clone https://github.com/ugomeguerditchian/OrgASM
   cd OrgASM
   pip install -r requirements.txt
-  usage: main.py [-h] [-d DOMAIN] [-w WORDLIST] [-wT WORDLISTTHREADS] [-dT DNSTHREADS] [-iS IPSCANTYPE]
-                [-iT IPTHREADS] [-sT SUBDOMAINSTHREADS] [-o]
+    usage: main.py [-h] [-d DOMAIN] [-sF SUBFILE] [-w WORDLIST] [-wT WORDLISTTHREADS] [-dT DNSTHREADS] [-iS IPSCANTYPE] [-iT IPTHREADS]
+                [-sT SUBDOMAINSTHREADS] [-o]
 
-  options:
+    options:
     -h, --help            show this help message and exit
     -d DOMAIN, --domain DOMAIN
-                          Domain to scan
+                            Domain to scan
+    -sF SUBFILE, --subfile SUBFILE
+                            Path to file with subdomains, one per line
     -w WORDLIST, --wordlist WORDLIST
-                          Wordlist to use (small, medium(default), big)
+                            Wordlist to use (small, medium(default), big)
     -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
-                          Number of threads to use for Wordlist(default 500)
+                            Number of threads to use for Wordlist(default 500)
     -dT DNSTHREADS, --dnsThreads DNSTHREADS
-                          Number of threads to use for DNS query(default 500)
+                            Number of threads to use for DNS query(default 500)
     -iS IPSCANTYPE, --IPScanType IPSCANTYPE
-                          Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only
-                          subdomains IP containtaining domain given but with a redirect, A: All subdomains
-                          detected
+                            Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP
+                            containtaining domain given but with a redirect, A: All subdomains detected
     -iT IPTHREADS, --IPthreads IPTHREADS
-                          Number of threads to use for IP scan(default 2000)
+                            Number of threads to use for IP scan(default 2000)
     -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
-                          Number of threads to use for check real subdomains(default 500)
+                            Number of threads to use for check real subdomains(default 500)
     -o, --output          If provided > save the results, default is False
 ```
 
@@ -670,7 +671,7 @@ Install **OrgASM** with pip
 - [X] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
 - [ ] Dorking test
 - [ ] Export map options
-- [ ] Possibility to add a list of already knows subdomains
+- [X] Possibility to add a list of already knows subdomains
 - [ ] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
 - [ ] Config file (yaml)
 - [X] Choice for doing IP scan only on target associated with main domain

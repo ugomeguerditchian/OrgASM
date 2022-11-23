@@ -17,6 +17,7 @@ logger = cl.logger
 def menu():
     argpars = argparse.ArgumentParser()
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
+    argpars.add_argument("-sF", "--subfile", required=False, help="Path to file with subdomains, one per line")
     argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, type=int, required=False, help="Number of threads to use for Wordlist(default 500)")
     argpars.add_argument("-dT", "--dnsThreads", default=500, type=int, required=False, help="Number of threads to use for DNS query(default 500)")
@@ -43,7 +44,15 @@ def menu():
     while not re.match(r"^[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}$", domain):
         logger.error("Invalid domain name")
         domain = input("Enter domain name: ")
-    all_results = []
+    
+    if args.subfile:
+        all_results=[]
+        with open(args.subfile, "r") as file:
+            for line in file:
+                all_results.append(line.strip())
+    else :
+        all_results = []
+    
     #get all the subdomains from alienvault
     logger.info("Alienvault testing...")
     all_results += sh.alienvault_parser(domain)
@@ -58,19 +67,12 @@ def menu():
     logger.info("Crt.sh testing done")
     #get all the subdomains from wordlist
     #ask for small, medium or large wordlist
-    if args.wordlist:
-        wordlist_size = args.wordlist
-    else:
-        wordlist_size = input("Wordlist size (small, medium, big): ")
-        while wordlist_size not in ["small", "medium", "big"]:
-            logger.error("Invalid wordlist size")
-            wordlist_size = input("Wordlist size (small, medium, big): ")
+    
+    wordlist_size = args.wordlist
     
     #ask for how many threads to use for the wordlist
     if args.wordlistThreads:
         wordlist_thread_number = int(args.wordlistThreads)
-    else:
-        wordlist_thread_number = int(input("Enter number of threads to use for the wordlist scan: "))
     
     logger.info("Wordlist testing...")
     all_results += sh.from_wordlist_thread(domain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
@@ -79,7 +81,6 @@ def menu():
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
 
-
     dns_result=[]
     #check subdomains by accessing them with dp.detect_redirect
     cl.logger.info("Checking subdomains...")
@@ -87,9 +88,7 @@ def menu():
     temp_all_results = []
     temp_all_results, subdomains_with_redirect = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
     all_results = temp_all_results
-    # for subdomain in all_results:
-    #     if ips.get_ip(subdomain) :
-    #         all_results.remove(subdomain)
+
     cl.logger.info("Checking subdomains done")
     for result in all_results:
         print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
