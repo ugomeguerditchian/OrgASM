@@ -16,10 +16,13 @@ We will also soon released the dorking compatibility and web parser 🥸
 ## Features
 
 - Obtaining results via [Alienvault](https://otx.alienvault.com/), [Hackertarget](https://hackertarget.com/) and [crt.sh](https://crt.sh/)
+- Possibility to add a list of already knows subdomains
 - Subdomain Bruteforcing
+- Recursive scan
 - DNS query
 - IP Sorting and scanning (Ports and services)
 - JSON Export
+- Filtering real subdomains by access them (and detect potential redirections to others subdomains)
 
 ## Installation
 
@@ -666,7 +669,7 @@ Install **OrgASM** with pip
 
 - [ ] Service scanning amelioration
 - [ ] Add DNS transfer zone test
-- [ ] Recursive scan for subdomains bruteforcing
+- [X] Recursive scan for subdomains bruteforcing
 - [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
 - [X] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
 - [ ] Dorking test
