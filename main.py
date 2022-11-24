@@ -35,7 +35,7 @@ def recursive_subdomains(subs : list, wt :int, wd :str, mode :str) -> list:
             logger.info("Crt.sh testing done")
         if "B" in mode :
             logger.info("Wordlist testing...")
-            temp_subs += sh.from_wordlist(subdomain, wd, wt)
+            temp_subs += sh.from_wordlist_thread(subdomain, wt, f"wordlists/{wd}.txt")
             logger.info("Wordlist testing done")
         temp_subs = rp.delete_occurences(temp_subs)
     for subdomain in temp_subs:
@@ -62,7 +62,6 @@ def menu():
 
     args = argpars.parse_args()
     mode = args.mode
-    print(mode)
     wordlist_size = args.wordlist
     wordlist_thread_number = int(args.wordlistThreads)
     #verify mode
