@@ -130,6 +130,7 @@ def menu():
             new_scan = recursive_subdomains(new_scan, wordlist_thread_number, wordlist_size)
             counter += 1
         logger.info("Recursive scan done")
+
     #delete all the occurences in the list
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
@@ -143,13 +144,13 @@ def menu():
     all_results = temp_all_results
 
     cl.logger.info("Checking subdomains done")
-    for result in all_results:
-        print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
-        #dns_request.main return a list
-        #join all the list in one list
-        dns_result += dns_request.main(result, args.dnsThreads)
-    all_results+= dns_result
-    logger.info("DNS testing done")
+    # for result in all_results:
+    #     print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
+    #     #dns_request.main return a list
+    #     #join all the list in one list
+    #     dns_result += dns_request.main(result, args.dnsThreads)
+    # all_results+= dns_result
+    # logger.info("DNS testing done")
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
     logger.info("All done")
@@ -172,9 +173,10 @@ def menu():
     ip_dict = ips.get_all_ip(final_dict, domain)
     logger.info("IP sorting done")
     logger.info("IP sorting results:")
-    pprint(ip_dict)
-    logger.info("Done")
     final_dict_result= ip_dict
+    final_dict_result["dead_subdomains"] = final_dict["dead_subdomains"]
+    pprint(final_dict_result)
+    logger.info("Done")
     logger.info("IP scanning...")
 
     if args.IPScanType == "W":

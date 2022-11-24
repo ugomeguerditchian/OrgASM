@@ -11,7 +11,7 @@ def detect_redirect(url: str) -> bool:
                 if check_up(url) :
                     response = requests.get("http://"+url, headers={'User-Agent': 'Google Chrome'}, timeout=1)
             except:
-                return "dead"
+                return False
         if response.history:
             #split response.url to get the domain
             url_redirected= response.url.split("//")[1]
@@ -22,7 +22,7 @@ def detect_redirect(url: str) -> bool:
         else:
             return False
     else :
-        return None
+        return "dead"
 def detect_redirect_with_thread_limit(subdomains: list, thread_number: int) -> list:
     real_subdomains = []
     subdomains_with_redirect = []
@@ -30,7 +30,7 @@ def detect_redirect_with_thread_limit(subdomains: list, thread_number: int) -> l
     with ThreadPoolExecutor(thread_number) as executor:
         results = executor.map(detect_redirect, subdomains)
         for subdomain, is_redirect in zip(subdomains, results):
-            if is_redirect:
+            if is_redirect == True:
                 if is_redirect not in subdomains and is_redirect != "" :
                     real_subdomains.append(is_redirect)
                     #print(f'> {subdomain} is a redirect')

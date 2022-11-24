@@ -30,12 +30,19 @@ def hacker_target_parser(domain):
         #get all the subdomains
         subdomains = []
         for line in lines:
-            subdomains.append(line.split(",")[0])
+            if line != "":
+                if line == "API count exceeded - Increase Quota with Membership" :
+                    raise Exception("API")
+                subdomains.append(line.split(",")[0])
         #delete all the occurences in the list
         subdomains = rp.delete_occurences(subdomains)
+        
         return subdomains
     except Exception as e:
-        logger.error("Impossible to get subdomains from hackertarget")
+        if e.args[0] == "API":
+            logger.error("API count exceeded for hackertarget")
+        else:
+            logger.error("Impossible to get subdomains from hackertarget")
         return []
 
 def crtsh_parser(domain):
@@ -83,7 +90,9 @@ def crtsh_parser(domain):
             #split name_value in lines
             lines = item["name_value"].split("\n")
             for line in lines:
-                subdomains.append(line)
+                if line != "" and "*" not in line:
+                    subdomains.append(line)
+
         return subdomains
     except Exception as e:
         logger.error("Impossible to get subdomains from crtsh")
@@ -94,9 +103,6 @@ def alienvault_parser(domain):
     url = "https://otx.alienvault.com/api/v1/indicators/domain/" + domain + "/passive_dns"
     try :
         response = requests.get(url)
-        #if respose is API count exceeded - Increase Quota with Membership then raise an exception
-        if response.text == "API count exceeded - Increase Quota with Membership":
-            raise Exception("API count exceeded - Increase Quota with Membership")
         #response is a json format
         #convert response.text in json
         json_data = json.loads(response.text)
@@ -140,10 +146,7 @@ def alienvault_parser(domain):
         subdomains = rp.delete_occurences(subdomains)
         return subdomains
     except Exception as e:
-        if e == "API count exceeded - Increase Quota with Membership":
-            logger.error("Impossible to get subdomains from alienvault because of API count exceeded")
-        else:
-            logger.error("Impossible to get subdomains from alienvault")
+        logger.error("Impossible to get subdomains from alienvault")
         return []
 
 
