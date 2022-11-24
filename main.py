@@ -13,7 +13,7 @@ import argparse
 logger = cl.logger
 
 
-def recursive_subdomains(subs : list, wt :int, wd :str) -> list:
+def recursive_subdomains(subs : list, wt :int, wd :str, mode :str) -> list:
     temp_subs = []
     new_subs = []
     for subdomain in subs :
@@ -22,20 +22,21 @@ def recursive_subdomains(subs : list, wt :int, wd :str) -> list:
         except:
             # linux
             os.system("clear")
-
         logger.info(f"Recursive scan of {subdomain} | {subs.index(subdomain)}/{len(subs)}")
-        logger.info("Alienvault testing...")
-        temp_subs += sh.alienvault_parser(subdomain)
-        logger.info("Alienvault testing done")
-        logger.info("Hackertarget testing...")
-        temp_subs += sh.hacker_target_parser(subdomain)
-        logger.info("Hackertarget testing done")
-        logger.info("Crt.sh testing...")
-        temp_subs += sh.crtsh_parser(subdomain)
-        logger.info("Crt.sh testing done")
-        logger.info("Wordlist testing...")
-        temp_subs += sh.from_wordlist_thread(subdomain, wt, f"wordlists/{wd}.txt")
-        logger.info("Wordlist testing done")
+        if "O" in mode :
+            logger.info("Alienvault testing...")
+            temp_subs += sh.alienvault_parser(subdomain)
+            logger.info("Alienvault testing done")
+            logger.info("Hackertarget testing...")
+            temp_subs += sh.hacker_target_parser(subdomain)
+            logger.info("Hackertarget testing done")
+            logger.info("Crt.sh testing...")
+            temp_subs += sh.crtsh_parser(subdomain)
+            logger.info("Crt.sh testing done")
+        if "B" in mode :
+            logger.info("Wordlist testing...")
+            temp_subs += sh.from_wordlist(subdomain, wd, wt)
+            logger.info("Wordlist testing done")
         temp_subs = rp.delete_occurences(temp_subs)
     for subdomain in temp_subs:
         if subdomain not in subs:
@@ -48,6 +49,7 @@ def recursive_subdomains(subs : list, wt :int, wd :str) -> list:
 def menu():
     argpars = argparse.ArgumentParser()
     argpars.add_argument("-d", "--domain", required=False, help="Domain to scan")
+    argpars.add_argument("-m", "--mode", required=False, default="OBS", help="Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)")
     argpars.add_argument("-sF", "--subfile", required=False, help="Path to file with subdomains, one per line")
     argpars.add_argument("-R", "--recursive", required=False, default=1, type= int, help="Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0")
     argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
@@ -59,6 +61,14 @@ def menu():
     argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
+    mode = args.mode
+    print(mode)
+    wordlist_size = args.wordlist
+    wordlist_thread_number = int(args.wordlistThreads)
+    #verify mode
+    if len(mode) > 3 or len(mode) < 1 or not re.match("^[OBS]+$", mode):
+        logger.error("Mode not valid, must be O B or S (or concatenation like : OS, OB, OBS)")
+        exit(1)
 
     # help for argpars
     domain = ""
@@ -86,33 +96,23 @@ def menu():
         all_results = []
     
     #get all the subdomains from alienvault
-    logger.info("Alienvault testing...")
-    all_results += sh.alienvault_parser(domain)
-    logger.info("Alienvault testing done")
-    #get all the subdomains from hackertarget
-    logger.info("Hackertarget testing...")
-    all_results += sh.hacker_target_parser(domain)
-    logger.info("Hackertarget testing done")
-    #get all the subdomains from crt.sh
-    logger.info("Crt.sh testing...")
-    all_results += sh.crtsh_parser(domain)
-    logger.info("Crt.sh testing done")
-    #get all the subdomains from wordlist
-    #ask for small, medium or large wordlist
-    
-    wordlist_size = args.wordlist
-    
-    #ask for how many threads to use for the wordlist
-    if args.wordlistThreads:
-        wordlist_thread_number = int(args.wordlistThreads)
-    
-    logger.info("Wordlist testing...")
-    all_results += sh.from_wordlist_thread(domain, wordlist_thread_number, f"wordlists/{wordlist_size}.txt")
-    logger.info("Wordlist testing done")
-    #delete all the occurences in the list
+    if "O" in mode:
+        logger.info("Alienvault testing...")
+        all_results += sh.alienvault_parser(domain)
+        logger.info("Alienvault testing done")
+        logger.info("Hackertarget testing...")
+        all_results += sh.hacker_target_parser(domain)
+        logger.info("Hackertarget testing done")
+        logger.info("Crt.sh testing...")
+        all_results += sh.crtsh_parser(domain)
+        logger.info("Crt.sh testing done")
+    if "B" in mode:
+        logger.info("Wordlist testing...")
+        all_results += sh.from_wordlist_thread(domain, args.wordlistThreads, f"wordlists/{wordlist_size}.txt")
+        logger.info("Wordlist testing done")
+
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
-    logger.info(all_results)
     #clear the screen
     try :
         os.system("cls")
@@ -122,12 +122,12 @@ def menu():
 
     if args.recursive > 0:
         logger.info("Recursive scan...")
-        new_scan = recursive_subdomains(all_results, wordlist_thread_number, wordlist_size)
+        new_scan = recursive_subdomains(all_results, wordlist_thread_number, wordlist_size, mode)
         all_results += new_scan
         counter = 1
         while len(new_scan) > 0 and counter < args.recursive:
             all_results += new_scan
-            new_scan = recursive_subdomains(new_scan, wordlist_thread_number, wordlist_size)
+            new_scan = recursive_subdomains(new_scan, wordlist_thread_number, wordlist_size, mode)
             counter += 1
         logger.info("Recursive scan done")
 
@@ -167,43 +167,44 @@ def menu():
         print(subdomain)
     for subdomain in final_dict["dead_subdomains"]:
         print(subdomain)
-    
+    final_dict_result = final_dict
+    if "S" in mode:
+        final_dict_result= {}
+        logger.info("IP sorting...")
+        ip_dict = ips.get_all_ip(final_dict, domain)
+        logger.info("IP sorting done")
+        logger.info("IP sorting results:")
+        final_dict_result= ip_dict
+        final_dict_result["dead_subdomains"] = final_dict["dead_subdomains"]
+        pprint(final_dict_result)
+        logger.info("Done")
+        logger.info("IP scanning...")
 
-    logger.info("IP sorting...")
-    ip_dict = ips.get_all_ip(final_dict, domain)
-    logger.info("IP sorting done")
-    logger.info("IP sorting results:")
-    final_dict_result= ip_dict
-    final_dict_result["dead_subdomains"] = final_dict["dead_subdomains"]
-    pprint(final_dict_result)
-    logger.info("Done")
-    logger.info("IP scanning...")
-
-    if args.IPScanType == "W":
-        for ip in final_dict_result :
-            if final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
+        if args.IPScanType == "W":
+            for ip in final_dict_result :
+                if final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
+                    open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
+                    for port in open_ports:
+                        final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
+        elif args.IPScanType == "WR":
+            for ip in final_dict_result :
+                if final_dict_result[ip]["subdomains"]["subdomain_with_redirect"] != [] or final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
+                    open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
+                    for port in open_ports:
+                        final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
+        elif args.IPScanType == "A":
+            for ip in final_dict_result :
                 open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
                 for port in open_ports:
                     final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
-    elif args.IPScanType == "WR":
-        for ip in final_dict_result :
-            if final_dict_result[ip]["subdomains"]["subdomain_with_redirect"] != [] or final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
-                open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
-                for port in open_ports:
-                    final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
-    elif args.IPScanType == "A":
-        for ip in final_dict_result :
-            open_ports= ips.port_scan_with_thread_limit(ip, range(65536), args.IPthreads)
-            for port in open_ports:
-                final_dict_result[ip]["ports"][port]= ips.detect_service(ip, port)
 
 
-    logger.info("IP scanning done")
-    logger.info("IP scanning service analysis...")
-    final_dict_result= rp.service_recognizer(final_dict_result)
-    logger.info("IP scanning results:")
-    pprint(final_dict_result)
-    logger.info("Done")
+        logger.info("IP scanning done")
+        logger.info("IP scanning service analysis...")
+        final_dict_result= rp.service_recognizer(final_dict_result)
+        logger.info("IP scanning results:")
+        pprint(final_dict_result)
+        logger.info("Done")
     save = ""
     if not output:
         while save.lower() != "y" and save.lower() != "n":

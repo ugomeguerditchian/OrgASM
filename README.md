@@ -22,7 +22,8 @@ We will also soon released the dorking compatibility and web parser 🥸
 - DNS query
 - IP Sorting and scanning (Ports and services)
 - JSON Export
-- Filtering real subdomains by access them (and detect potential redirections to others subdomains)
+- Filtering real subdomains by access them (and detect potential redirections to others subdomains).
+- You can choose if you want only OSINT mode (API request on third party websites), Bruteforce and IPs scanning
 
 ## Installation
 
@@ -40,8 +41,11 @@ Install **OrgASM** with pip
     -h, --help            show this help message and exit
     -d DOMAIN, --domain DOMAIN
                             Domain to scan
+    -m MODE, --mode MODE  Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)
     -sF SUBFILE, --subfile SUBFILE
                             Path to file with subdomains, one per line
+    -R RECURSIVE, --recursive RECURSIVE
+                            Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
     -w WORDLIST, --wordlist WORDLIST
                             Wordlist to use (small, medium(default), big)
     -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
@@ -49,8 +53,7 @@ Install **OrgASM** with pip
     -dT DNSTHREADS, --dnsThreads DNSTHREADS
                             Number of threads to use for DNS query(default 500)
     -iS IPSCANTYPE, --IPScanType IPSCANTYPE
-                            Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP
-                            containtaining domain given but with a redirect, A: All subdomains detected
+                            Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected
     -iT IPTHREADS, --IPthreads IPTHREADS
                             Number of threads to use for IP scan(default 2000)
     -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
@@ -675,7 +678,7 @@ Install **OrgASM** with pip
 - [ ] Dorking test
 - [ ] Export map options
 - [X] Possibility to add a list of already knows subdomains
-- [ ] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
+- [X] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
 - [ ] Config file (yaml)
 - [X] Choice for doing IP scan only on target associated with main domain
 - [ ] Add vulnerability scan
