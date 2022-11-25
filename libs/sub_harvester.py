@@ -30,7 +30,7 @@ def hacker_target_parser(domain):
         #get all the subdomains
         subdomains = []
         for line in lines:
-            if line != "":
+            if line != "" and "*" not in line.split(",")[0]:
                 if line == "API count exceeded - Increase Quota with Membership" :
                     raise Exception("API")
                 subdomains.append(line.split(",")[0])
@@ -139,7 +139,8 @@ def alienvault_parser(domain):
         subdomains = []
         for i in json_data["passive_dns"]:
             try :
-                subdomains.append(i["hostname"])
+                if "*" not in subdomains.append(i["hostname"]) :
+                    subdomains.append(i["hostname"])
             except:
                 pass
         #delete all the occurences in the list
@@ -157,6 +158,8 @@ def from_wordlist(domain, wordlist_chunks):
     #test all the subdomains like {subdomain}.{domain}
     subdomains = []
     for line in wordlist_chunks:
+        if "*" in line:
+            pass
         #delete the \n
         line = line.replace("\r", "")
         #loaading percentage

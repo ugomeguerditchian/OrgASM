@@ -114,6 +114,7 @@ def menu():
 
     logger.info("Deleting occurences...")
     all_results = rp.delete_occurences(all_results)
+    all_results = rp.delete_star(all_results)
     #clear the screen
     try :
         os.system("cls")
@@ -176,11 +177,12 @@ def menu():
         logger.info("IP sorting done")
         logger.info("IP sorting results:")
         final_dict_result= ip_dict
+        #pop dead_subdomains
         final_dict_result["dead_subdomains"] = final_dict["dead_subdomains"]
         pprint(final_dict_result)
         logger.info("Done")
+        deads= final_dict_result.pop("dead_subdomains")
         logger.info("IP scanning...")
-
         if args.IPScanType == "W":
             for ip in final_dict_result :
                 if final_dict_result[ip]["subdomains"]["subdomain_withdomain"] != []:
@@ -204,6 +206,7 @@ def menu():
         logger.info("IP scanning service analysis...")
         final_dict_result= rp.service_recognizer(final_dict_result)
         logger.info("IP scanning results:")
+        final_dict_result["dead_subdomains"]= deads
         pprint(final_dict_result)
         logger.info("Done")
     save = ""
