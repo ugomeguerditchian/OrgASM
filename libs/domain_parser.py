@@ -12,14 +12,17 @@ def detect_redirect(url: str) -> bool:
                     response = requests.get("http://"+url, headers={'User-Agent': 'Google Chrome'}, timeout=1)
             except:
                 return False
-        if response.history:
-            #split response.url to get the domain
-            url_redirected= response.url.split("//")[1]
-            domain = url_redirected.split("/")[0]
-            if url_redirected == url:
-                return False
-            return domain
-        else:
+        try :
+            if response.history:
+                #split response.url to get the domain
+                url_redirected= response.url.split("//")[1]
+                domain = url_redirected.split("/")[0]
+                if url_redirected == url:
+                    return False
+                return domain
+            else:
+                return "dead"
+        except:
             return False
     else :
         return "dead"

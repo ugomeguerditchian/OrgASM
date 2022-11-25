@@ -68,6 +68,8 @@ def menu():
     if len(mode) > 3 or len(mode) < 1 or not re.match("^[OBS]+$", mode):
         logger.error("Mode not valid, must be O B or S (or concatenation like : OS, OB, OBS)")
         exit(1)
+    if mode == "S":
+        logger.error("Cannot use only IP scan mode, you have to use at least one of the other modes with it")
 
     # help for argpars
     domain = ""
