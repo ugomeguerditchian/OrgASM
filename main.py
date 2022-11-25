@@ -138,12 +138,13 @@ def menu():
     all_results = rp.delete_occurences(all_results)
     dns_result=[]
     #check subdomains by accessing them with dp.detect_redirect
-    cl.logger.info("Checking subdomains...")
-    subdomains_with_redirect=[]
-    temp_all_results = []
-    dead_subdomains = []
-    temp_all_results, subdomains_with_redirect, dead_subdomains = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
-    all_results = temp_all_results
+    if "S" in mode or "B" in mode:
+        cl.logger.info("Checking subdomains...")
+        subdomains_with_redirect=[]
+        temp_all_results = []
+        dead_subdomains = []
+        temp_all_results, subdomains_with_redirect, dead_subdomains = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
+        all_results = temp_all_results
 
     cl.logger.info("Checking subdomains done")
     # for result in all_results:
