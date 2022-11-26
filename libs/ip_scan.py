@@ -21,8 +21,6 @@ def get_ip(domain):
 def test_port_number(host, port):
     # create and configure the socket
     with socket(AF_INET, SOCK_STREAM) as sock:
-        if port == 554 :
-            pass
         # set a timeout of a few seconds
         sock.settimeout(3)
         # connecting may fail

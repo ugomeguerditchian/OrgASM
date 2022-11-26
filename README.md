@@ -30,34 +30,35 @@ We will also soon released the dorking compatibility and web parser 🥸
 Install **OrgASM** with pip
 (:warning: *Python 3.8 >= Needed*)
 
-```bash
+```
   git clone https://github.com/ugomeguerditchian/OrgASM
   cd OrgASM
   pip install -r requirements.txt
-    usage: main.py [-h] [-d DOMAIN] [-sF SUBFILE] [-w WORDLIST] [-wT WORDLISTTHREADS] [-dT DNSTHREADS] [-iS IPSCANTYPE] [-iT IPTHREADS]
-                [-sT SUBDOMAINSTHREADS] [-o]
+  usage: main.py [-h] [-d DOMAIN] [-m MODE] [-sF SUBFILE] [-R RECURSIVE] [-w WORDLIST] [-wT WORDLISTTHREADS] [-dT DNSTHREADS] [-iS IPSCANTYPE] [-iT IPTHREADS] [-sT SUBDOMAINSTHREADS] [-cP CHECKPORTSTHREADS] [-o]
 
-    options:
+  options:
     -h, --help            show this help message and exit
     -d DOMAIN, --domain DOMAIN
-                            Domain to scan
+                          Domain to scan
     -m MODE, --mode MODE  Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)
     -sF SUBFILE, --subfile SUBFILE
-                            Path to file with subdomains, one per line
+                          Path to file with subdomains, one per line
     -R RECURSIVE, --recursive RECURSIVE
-                            Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
+                          Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
     -w WORDLIST, --wordlist WORDLIST
-                            Wordlist to use (small, medium(default), big)
+                          Wordlist to use (small, medium(default), big)
     -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
-                            Number of threads to use for Wordlist(default 500)
+                          Number of threads to use for Wordlist(default 500)
     -dT DNSTHREADS, --dnsThreads DNSTHREADS
-                            Number of threads to use for DNS query(default 500)
+                          Number of threads to use for DNS query(default 500)
     -iS IPSCANTYPE, --IPScanType IPSCANTYPE
-                            Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected
+                          Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected
     -iT IPTHREADS, --IPthreads IPTHREADS
-                            Number of threads to use for IP scan(default 2000)
+                          Number of threads to use for IP scan(default 2000)
     -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
-                            Number of threads to use for check real subdomains(default 500)
+                          Number of threads to use for check real subdomains(default 500)
+    -cP CHECKPORTSTHREADS, --checkPortsThreads CHECKPORTSTHREADS
+                          Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)
     -o, --output          If provided > save the results, default is False
 ```
 
@@ -77,8 +78,8 @@ Install **OrgASM** with pip
         "ports" : {
           "22": "ssh",
           "53": "domain",
-          "80": "http",
-          "443": "https",
+          "80": "website",
+          "443": "website",
           "465": "submissions",
           "587": "submission",
           "993": "imaps",
@@ -92,7 +93,7 @@ Install **OrgASM** with pip
           "24478": "Unknown",
           "25955": "Unknown",
           "28443": "Unknown",
-          "30416": "Unknown",
+          "30416": "website",
           "31588": "Unknown",
           "36641": "Unknown",
           "39499": "Unknown",
@@ -107,17 +108,17 @@ Install **OrgASM** with pip
           "subdomains_with_redirect":["prod.example.com"]
           },
         "ports": {
-          "80": "http",
-          "443": "https",
+          "80": "website",
+          "443": "website",
           "2052": "clearvisn",
           "2053": "knetd",
           "2082": "infowave",
           "2083": "radsec",
-          "2086": "gnunet",
+          "2086": "website",
           "2087": "eli",
           "2095": "nbx-ser",
           "2096": "nbx-dir",
-          "8080": "http-alt",
+          "8080": "website",
           "8443": "pcsync-https",
           "8880": "cddbp-alt"
         }
