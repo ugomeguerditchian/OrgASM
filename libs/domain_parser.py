@@ -21,7 +21,7 @@ def detect_redirect(url: str) -> bool:
                     return False
                 return domain
             else:
-                return "dead"
+                return False
         except:
             return False
     else :
@@ -65,6 +65,6 @@ def check_up(url: str) -> bool:
         return False
 
 if __name__ == "__main__":
-    print(check_up("info.orangecyberdefense.com"))
-    print(detect_redirect("info.orangecyberdefense.com"))
+    print(check_up("benoit.fage.fr"))
+    print(detect_redirect("benoit.fage.fr"))
     # print(check_up("https://content.pizza.benoit.fage.fr"))

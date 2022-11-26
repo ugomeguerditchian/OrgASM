@@ -168,6 +168,7 @@ def menu():
     logger.info(f"Subdomains with redirect detected :")
     for subdomain in final_dict["subdomain_with_redirect"]:
         print(subdomain)
+    logger.info(f"Dead subdomains :")
     for subdomain in final_dict["dead_subdomains"]:
         print(subdomain)
     final_dict_result = final_dict
