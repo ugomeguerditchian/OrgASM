@@ -54,7 +54,7 @@ def menu():
     argpars.add_argument("-R", "--recursive", required=False, default=1, type= int, help="Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0")
     argpars.add_argument("-w", "--wordlist", default="medium", type=str, required=False, help="Wordlist to use (small, medium(default), big)")
     argpars.add_argument("-wT", "--wordlistThreads", default=500, type=int, required=False, help="Number of threads to use for Wordlist(default 500)")
-    argpars.add_argument("-dT", "--dnsThreads", default=500, type=int, required=False, help="Number of threads to use for DNS query(default 500)")
+    #argpars.add_argument("-dT", "--dnsThreads", default=500, type=int, required=False, help="Number of threads to use for DNS query(default 500)")
     argpars.add_argument("-iS", "--IPScanType", default="W", type=str, required=False, help="Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected")
     argpars.add_argument("-iT", "--IPthreads", default=2000, type=int, required=False, help="Number of threads to use for IP scan(default 2000)")
     argpars.add_argument("-sT", "--subdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
