@@ -2,6 +2,7 @@ import requests
 from pythonping import ping
 from concurrent.futures import ThreadPoolExecutor
 from urllib3.exceptions import InsecureRequestWarning
+import webtech
 def detect_redirect(url: str) -> bool:
     if check_up(url) :
         try:
@@ -77,6 +78,51 @@ def detect_web_port(ip_dict :dict, thread_number: int, scan_mode: str) -> dict:
                         ip_dict[ip]["ports"][port] = "website"
     return ip_dict
 
+def detect_web_techno(ip_dict: dict, mode: str) -> dict:
+    for ip in ip_dict:
+        if (mode == "W" and ip_dict[ip]["subdomains"]["subdomain_withdomain"] != []) or (mode == "WR" and ip_dict[ip]["subdomains"]["subdomain_withdomain"] != [] or ip_dict[ip]["subdomains"]["subdomain_with_redirect"] != []) or (mode =="A") :
+            for port, service in ip_dict[ip]["ports"].items():
+                if service == "website":
+                    print(f"Detecting web technology for {ip}:{port}")
+                    try:
+                        result = webtech.WebTech(options={'json': True}).start_from_url(f"http://{ip}:{port}")
+                    except:
+                        try:
+                            result = webtech.WebTech(options={'json': True}).start_from_url(f"https://{ip}:{port}")
+                        except:
+                            result = {}
+                    if result != {}:
+                        ip_dict[ip]["ports"][port] = result
+    return ip_dict
+
+def detect_web_techno_domain(ip_dict: dict, mode: str) -> dict:
+    for ip in ip_dict:
+        ip_dict[ip]["subdomains"]["web_techno"]={}
+        if mode == "W" or mode=="WR" or mode== "A":
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_withdomain"]:
+                print(f"Detecting web technology for {subdomain}")
+                try:
+                    result = webtech.WebTech(options={'json': True}).start_from_url(f"http://{subdomain}")
+                except:
+                    try:
+                        result = webtech.WebTech(options={'json': True}).start_from_url(f"https://{subdomain}")
+                    except:
+                        result = {}
+                if result != {}:
+                    ip_dict[ip]["subdomains"]["web_techno"][subdomain] = result
+        if mode == "WR" or mode== "A":
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
+                print(f"Detecting web technology for {subdomain}")
+                try:
+                    result = webtech.WebTech().start_from_url(f"http://{subdomain}")
+                except:
+                    try:
+                        result = webtech.WebTech().start_from_url(f"https://{subdomain}")
+                    except:
+                        result = {}
+                if result != {}:
+                    ip_dict[ip]["subdomains"]["web_techno"][subdomain] = result
+    return ip_dict
 def check_up(url: str) -> bool:
     try:
         response = requests.get(url, headers={'User-Agent': 'Google Chrome'}, timeout=3)

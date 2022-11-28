@@ -59,6 +59,7 @@ def menu():
     argpars.add_argument("-iT", "--IPthreads", default=2000, type=int, required=False, help="Number of threads to use for IP scan(default 2000)")
     argpars.add_argument("-sT", "--subdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
     argpars.add_argument("-cP", "--checkPortsThreads", default=30, type=int, required=False, help="Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)")
+    argpars.add_argument("-dT", "--detectTechno", default=True, type=bool, required=False, help="Detect techno used by subdomains (default True) (deactivate with False)")
     argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
@@ -212,6 +213,9 @@ def menu():
         logger.info("Detecting web ports...")
         if args.checkPortsThreads != 0:
             final_dict_result= dp.detect_web_port(final_dict_result, args.checkPortsThreads, args.IPScanType)
+        if args.detectTechno :
+            final_dict_result = dp.detect_web_techno(final_dict_result, args.IPScanType)
+            final_dict_result = dp.detect_web_techno_domain(final_dict_result, args.IPScanType)
         logger.info("Detecting web ports done")
         logger.info("IP scanning results:")
         final_dict_result["dead_subdomains"]= deads
