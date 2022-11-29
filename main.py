@@ -60,6 +60,8 @@ def menu():
     argpars.add_argument("-sT", "--subdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
     argpars.add_argument("-cP", "--checkPortsThreads", default=30, type=int, required=False, help="Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)")
     argpars.add_argument("-dT", "--detectTechno", default=True, type=bool, required=False, help="Detect techno used by subdomains (default True) (deactivate with False)")
+    argpars.add_argument("-vuln", "--vulnScan", default=False, type=bool, required=False, help="Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default False) (activate with True)")
+    argpars.add_argument("-vulnconf", "--vulnConfig", default="", type=str, required=False, help="Path to config file for nuclei (default is the default config)")
     argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
@@ -148,7 +150,7 @@ def menu():
         temp_all_results, subdomains_with_redirect, dead_subdomains = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
         all_results = temp_all_results
 
-    cl.logger.info("Checking subdomains done")
+        cl.logger.info("Checking subdomains done")
     # for result in all_results:
     #     print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
     #     #dns_request.main return a list
@@ -156,8 +158,11 @@ def menu():
     #     dns_result += dns_request.main(result, args.dnsThreads)
     # all_results+= dns_result
     # logger.info("DNS testing done")
-    logger.info("Deleting occurences...")
-    all_results = rp.delete_occurences(all_results)
+        logger.info("Deleting occurences...")
+        all_results = rp.delete_occurences(all_results)
+    else :
+        subdomains_with_redirect = []
+        dead_subdomains = []
     logger.info("All done")
 
     final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect, dead_subdomains)
@@ -216,6 +221,8 @@ def menu():
         if args.detectTechno :
             final_dict_result = dp.detect_web_techno(final_dict_result, args.IPScanType)
             final_dict_result = dp.detect_web_techno_domain(final_dict_result, args.IPScanType)
+        if args.vulnScan :
+            final_dict_result = ips.run_parse_nuclei(final_dict_result, domain, args.IPScanType, args.vulnConfig)
         logger.info("Detecting web ports done")
         logger.info("IP scanning results:")
         final_dict_result["dead_subdomains"]= deads

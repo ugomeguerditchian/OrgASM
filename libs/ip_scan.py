@@ -8,6 +8,10 @@ from multiprocessing import Pool
 from libs import custom_logger
 logger = custom_logger.logger
 from pprint import pprint
+import os
+import subprocess
+import json
+from datetime import datetime
 
 def get_ip(domain):
     #get the ip address from the domain
@@ -153,3 +157,124 @@ def get_all_ip(subdomains: dict, domain :str):
                 }
             dict[ip]["subdomains"]["subdomain_with_redirect"].append(subdomain)
     return dict
+
+def check_if_nuclei_installed() -> bool:
+    #check if nuclei is installed by doing nuclei -h
+    #return True if installed, False otherwise
+    #use subprocess to run the command and don't show the output
+    try:
+        subprocess.run(["nuclei", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
+    except:
+        return False
+
+def nuclei_scan(hosts: list, domain: str, vulnconf: str) -> dict:
+    #scan the hosts with nuclei
+    #return the results
+    #check if nuclei is installed
+    logger.info("Checking if nuclei is installed...")
+    if not check_if_nuclei_installed():
+        logger.error("Nuclei is not installed")
+        return None
+    else :
+        logger.info("Nuclei is installed")
+
+    #create nuclei folder in project folder
+    if not os.path.exists("nuclei"):
+        os.mkdir("nuclei")
+    
+    #create a folder for the domain
+    if not os.path.exists(f"nuclei/{domain}"):
+        os.mkdir(f"nuclei/{domain}")
+    
+    #create a hosts.txt with one host per line
+    with open(f"nuclei/{domain}/hosts.txt", "w") as f:
+        for host in hosts:
+            f.write(f"{host}\r")
+        f.close()
+        #parse the file and delete if line is empty
+        with open(f"nuclei/{domain}/hosts.txt", "r") as f:
+            lines = f.readlines()
+            f.close()
+        with open(f"nuclei/{domain}/hosts.txt", "w") as f:
+            for line in lines:
+                if line.strip("\r") != "":
+                    f.write(line)
+            f.close()
+    
+    #update nuclei don't show the output
+    logger.info("Updating nuclei")
+    subprocess.run(["nuclei", "-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #update nuclei templates
+    logger.info("Updating nuclei templates")
+    subprocess.run(["nuclei", "-ut"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+    #run nuclei and save the results in a json file
+    actual_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    if vulnconf != "":
+        logger.info("Running nuclei with config file")
+        os.system(f"nuclei -l nuclei/{domain}/hosts.txt -config {vulnconf} -json -o nuclei/{domain}/results.json")
+    else :
+        os.system(f"nuclei -l nuclei/{domain}/hosts.txt -json -o nuclei/{domain}/results_{actual_time}.json")
+    #read the output
+    with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
+        if f.read() == "":
+            return None
+        #each line is a json
+        f.seek(0)
+        results = []
+        for line in f:
+            results.append(json.loads(line))
+        f.close()
+    return results
+
+def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> dict:
+    logger.info("Running nuclei scan...")
+    hosts_list = []
+    for ip in ip_dict:
+        if (mode == "W" and ip_dict[ip]["subdomains"]["subdomain_withdomain"] != []) or (mode == "WR" and ip_dict[ip]["subdomains"]["subdomain_withdomain"] != [] or ip_dict[ip]["subdomains"]["subdomain_with_redirect"] != []) or (mode =="A"):
+            hosts_list.append(ip)
+        if mode == "W" or mode == "WR" or mode == "A":
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_withdomain"]:
+                hosts_list.append("https://"+subdomain)
+        if mode == "WR" or mode == "A":
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
+                hosts_list.append("https://"+subdomain)
+        if mode == "A":
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
+                hosts_list.append("https://"+subdomain)
+    nuclei_results = nuclei_scan(hosts_list, domain, vulnconf)
+    logger.info("Nuclei scan finished")
+    if nuclei_results:
+        logger.info("Parsing nuclei results...")
+        #in ip_dict add vulns key and add the nuclei results
+        for ip in ip_dict:
+            ip_dict[ip]["vulns"] = []
+            for result in nuclei_results:
+                if result["host"] == ip:
+                    ip_dict[ip]["vulns"].append(result)
+        #add vulns key to subdomains and add the nuclei results, split the 'https://' from the subdomain
+        for ip in ip_dict:
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_withdomain"]:
+                ip_dict[ip]["subdomains"]["subdomain_withdomain"][subdomain]={}
+                ip_dict[ip]["subdomains"]["subdomain_withdomain"][subdomain]["vulns"] = []
+                for result in nuclei_results:
+                    if result["host"] == "https://"+subdomain:
+                        ip_dict[ip]["subdomains"]["subdomain_withdomain"][subdomain]["vulns"].append(result)
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
+                ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subdomain]={}
+                ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subdomain]["vulns"] = []
+                for result in nuclei_results:
+                    if result["host"] == "https://"+subdomain:
+                        ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subdomain]["vulns"].append(result)
+            for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
+                ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subdomain]={}
+                ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subdomain]["vulns"] = []
+                for result in nuclei_results:
+                    if result["host"] == "https://"+subdomain:
+                        ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subdomain]["vulns"].append(result)
+        logger.info("Nuclei results parsed")
+    return ip_dict
+
+
+    
