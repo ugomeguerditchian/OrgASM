@@ -255,22 +255,22 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> di
                     ip_dict[ip]["vulns"].append(result)
         #add vulns key to subdomains and add the nuclei results, split the 'https://' from the subdomain
         for ip in ip_dict:
+            subs_w= ip_dict[ip]["subdomains"]["subdomain_withdomain"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withdomain"]:
-                subs_w= ip_dict[ip]["subdomains"]["subdomain_withdomain"]
                 ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
                     if result["host"] == "https://"+subdomain:
                         ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]["vulns"].append(result)
+            subs_wr= ip_dict[ip]["subdomains"]["subdomain_with_redirect"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
-                subs_wr= ip_dict[ip]["subdomains"]["subdomain_with_redirect"]
                 ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
                     if result["host"] == "https://"+subdomain:
                         ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]["vulns"].append(result)
+            subs_wod= ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
-                subs_wod= ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]
                 ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subs_wod.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subs_wod.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
