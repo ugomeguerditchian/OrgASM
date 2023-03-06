@@ -13,15 +13,10 @@ import argparse
 logger = cl.logger
 
 
-def recursive_subdomains(subs : list, wt :int, wd :str, mode :str) -> list:
+def recursive_subdomains(subs : list, wt :int, wd :str, mode :str, domain :str) -> list:
     temp_subs = []
     new_subs = []
     for subdomain in subs :
-        try :
-            os.system("cls")
-        except:
-            # linux
-            os.system("clear")
         logger.info(f"Recursive scan of {subdomain} | {subs.index(subdomain)}/{len(subs)}")
         if "O" in mode :
             logger.info("Alienvault testing...")
@@ -44,6 +39,8 @@ def recursive_subdomains(subs : list, wt :int, wd :str, mode :str) -> list:
     if len(new_subs) == 0:
         return []
     else:
+        logger.info(f"Found {len(new_subs)} new subdomains, saved them to : exports/{domain}/dynamic_sub_save.txt")
+        rp.dynamic_save(new_subs, domain, "add")
         return new_subs
 
 def menu():
@@ -125,15 +122,18 @@ def menu():
     except:
         # linux
         os.system("clear")
-
+    logger.info(f"Actually creating the list of subdomains at : exports/{domain}/dynamic_sub_save.txt")
+    rp.dynamic_save(all_results, domain, "create")
     if args.recursive > 0:
         logger.info("Recursive scan...")
-        new_scan = recursive_subdomains(all_results, wordlist_thread_number, wordlist_size, mode)
+        new_scan = recursive_subdomains(all_results, wordlist_thread_number, wordlist_size, mode, domain)
         all_results += new_scan
+        all_results = rp.delete_occurences(all_results)
         counter = 1
         while len(new_scan) > 0 and counter < args.recursive:
             all_results += new_scan
-            new_scan = recursive_subdomains(new_scan, wordlist_thread_number, wordlist_size, mode)
+            new_scan = recursive_subdomains(new_scan, wordlist_thread_number, wordlist_size, mode, domain)
+            all_results = rp.delete_occurences(all_results)
             counter += 1
         logger.info("Recursive scan done")
 
