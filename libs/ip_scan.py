@@ -258,10 +258,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> di
         for ip in ip_dict:
             subs_w= ip_dict[ip]["subdomains"]["subdomain_withdomain"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withdomain"]:
-<<<<<<< HEAD
                 subs_w= copy.deepcopy(ip_dict[ip]["subdomains"]["subdomain_withdomain"])
-=======
->>>>>>> 36ebf468de62421bdc97e27d4a58429e61b3d69a
                 ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
@@ -269,10 +266,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> di
                         ip_dict[ip]["subdomains"]["subdomain_withdomain"][subs_w.index(subdomain)]["vulns"].append(result)
             subs_wr= ip_dict[ip]["subdomains"]["subdomain_with_redirect"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
-<<<<<<< HEAD
                 subs_wr= copy.deepcopy(ip_dict[ip]["subdomains"]["subdomain_with_redirect"])
-=======
->>>>>>> 36ebf468de62421bdc97e27d4a58429e61b3d69a
                 ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
@@ -280,10 +274,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> di
                         ip_dict[ip]["subdomains"]["subdomain_with_redirect"][subs_wr.index(subdomain)]["vulns"].append(result)
             subs_wod= ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
-<<<<<<< HEAD
                 subs_wod= copy.deepcopy(ip_dict[ip]["subdomains"]["subdomain_withoutdomain"])
-=======
->>>>>>> 36ebf468de62421bdc97e27d4a58429e61b3d69a
                 ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subs_wod.index(subdomain)]={}
                 ip_dict[ip]["subdomains"]["subdomain_withoutdomain"][subs_wod.index(subdomain)]["vulns"] = []
                 for result in nuclei_results:
