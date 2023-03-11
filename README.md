@@ -5,7 +5,7 @@
 
 A tool for Organized ASM (Attack Surface Monitoring).
 
-OrgASM can detect subdomains, detect all ip related to them, scan all open ports and detect services.
+OrgASM can detect subdomains, detect all ip related to them, scan all open ports and detect services and vulnerabilities.
 
 With the power of multi-threading it can be as fast as you want (and has you can) 🚀
 
@@ -18,6 +18,7 @@ We will also soon released the dorking compatibility and web parser 🥸
 - Obtaining results via [Alienvault](https://otx.alienvault.com/), [Hackertarget](https://hackertarget.com/) and [crt.sh](https://crt.sh/)
 - Possibility to add a list of already knows subdomains
 - Subdomain Bruteforcing
+- Vulnerability detection with [nuclei](https://github.com/projectdiscovery/nuclei)
 - Recursive scan
 - IP Sorting and scanning (Ports and services)
 - OrgASM can detect services using Wappalyzer sources ! Thanks to [webtech](https://github.com/ShielderSec/webtech)
@@ -305,7 +306,7 @@ Install **OrgASM** with pip
 - [X] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
 - [ ] Config file (yaml)
 - [X] Choice for doing IP scan only on target associated with main domain
-- [ ] Add vulnerability scan
+- [X] Add vulnerability scan
 ## Authors
 
 - [@ugomeguerditchian](https://github.com/ugomeguerditchian)

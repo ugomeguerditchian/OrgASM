@@ -243,7 +243,7 @@ def menu():
     if save.lower() == "y":
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         file_name = f"result_{domain.replace('.','-')}_{date}.json"
-        with open("exports/"+file_name, "w") as f:
+        with open("exports/"+domain+"/"+file_name, "w") as f:
             json.dump(final_dict_result, f, indent=4)
         logger.info(f"File saved in exports/{file_name}")
     logger.info("Exiting...")

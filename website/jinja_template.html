@@ -1,0 +1,135 @@
+<!doctype html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>OrgASM Result</title>
+
+</head>
+<body>
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Subdomains</button>
+          <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">IPs | Ports | Techno</button>
+          <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Vulns</button>
+        </div>
+      </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+            {% for ip in data %}
+                {% if ip != "dead_subdomains" %}
+                    {% for subs_type, value in data[ip]["subdomains"].items() %} 
+                        {% if subs_type != "web_techno" and subs_type != "vulns" %}
+                            <div class="accordion" id="subsaccordion{{ subs_type }}">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne{{ subs_type }}">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{ subs_type }}" aria-expanded="true" aria-controls="collapseOne{{ subs_type }}">
+                                            {{subs_type}}
+                                            </button>
+                                    </h2>
+                                    <div id="collapseOne{{ subs_type }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ subs_type }}" data-bs-parent="#subsaccordion{{ subs_type }}">
+                                        <div class="accordion-body">
+                                            {% for sub in value %}
+                                                {% if sub in data[ip]["subdomains"]["web_techno"] %}
+                                                    <div class="accordion" id="techaccordion{{ sub }}">
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="headingOne{{ sub }}">
+                                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{ sub }}" aria-expanded="true" aria-controls="collapseOne{{ sub }}">
+                                                                    {{sub}}
+                                                                    </button>
+                                                            </h2>
+                                                            <div id="collapseOne{{ sub }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ sub }}" data-bs-parent="#techaccordion{{ sub }}">
+                                                                <div class="accordion-body">
+                                                                    <p>Technologies</p>
+                                                                    {% for techno in data[ip]["subdomains"]["web_techno"][sub]["tech"] %}
+                                                                        Name : {{techno["name"]}}<br>
+                                                                        Version : {{techno["version"]}}<br><br>
+                                                                    {% endfor %}
+                                                                    <br><p>Headers</p>
+                                                                    {% for header in data[ip]["subdomains"]["web_techno"][sub]["headers"] %}
+                                                                        Name : {{header["name"]}}<br>
+                                                                        Value : {{header["value"]}}<br><br>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <a href="http://{{sub}}">{{sub}}</a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="accordion" id="Deadsaccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingDeads">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOneDeads" aria-expanded="true" aria-controls="collapseOneDeads">
+                                    Dead subdomains
+                                    </button>
+                            </h2>
+                            {% for sub in data[ip]["dead_subdomains"] %}
+                                        <div id="collapseOne{{ sub }}" class="accordion-collapse collapse" aria-labelledby="headingDeads" data-bs-parent="#Deadsaccordion">
+                                            <div class="accordion-body">
+                                                {% for sub in value %}
+                                                    {{sub}}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+            {% for ip in data %}
+                {% if ip != "dead_subdomains" %}
+                    <div class="accordion" id="IPsaccordion{{ ip }}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne{{ ip }}">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{ ip }}" aria-expanded="true" aria-controls="collapseOne{{ ip }}">
+                                    {{ip}}
+                                    </button>
+                            </h2>
+                            <div id="collapseOne{{ ip }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ ip }}" data-bs-parent="#IPsaccordion{{ ip }}">
+                                <div class="accordion-body">
+                                    <p>Ports : </p>
+                                    {% for port, tech in data[ip]["ports"].items() %}
+                                        {% if tech is mapping %}
+                                            {% if "name" in tech["tech"]%}
+                                                {{port}} :<br> &emspName : {{tech["tech"]["name"]}}<br>&emspVersion : {{tech[tech]["version"]}}<br>
+                                            {% endif %}
+                                        {% else %}
+                                            {{port}} : {{tech}} <br>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="headingOne5">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne5" aria-expanded="true" aria-controls="collapseOne5">
+                        Accordion Item #1
+                        </button>
+                  </h2>
+                    <div id="collapseOne5" class="accordion-collapse collapse" aria-labelledby="headingOne5" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                        <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+</body>

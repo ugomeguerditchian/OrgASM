@@ -44,9 +44,9 @@ def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_
     return dict
 
 def dynamic_save(all_results: dict, domain : str, mode : str):
+    up=[]
+    down=[]
     if mode == "create":
-        up=[]
-        down=[]
         if all_results:
             if not os.path.exists(f"exports/{domain}"):
                 os.makedirs(f"exports/{domain}")
