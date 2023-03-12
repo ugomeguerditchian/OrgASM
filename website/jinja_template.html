@@ -2,7 +2,10 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <title>OrgASM Result</title>
-
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 <body>
     <nav>
@@ -115,20 +118,56 @@
             {% endfor %}
         </div>
         <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
-            <div class="accordion" id="accordionExample">
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingOne5">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne5" aria-expanded="true" aria-controls="collapseOne5">
-                        Accordion Item #1
-                        </button>
-                  </h2>
-                    <div id="collapseOne5" class="accordion-collapse collapse" aria-labelledby="headingOne5" data-bs-parent="#accordionExample">
-                        <div class="accordion-body">
-                        <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+            {% for ip in data %}
+                {% if ip != "dead_subdomains" %}
+                    <div class="accordion" id="Vulnaccordion{{ ip }}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne{{ ip }}">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{ ip }}" aria-expanded="true" aria-controls="collapseOne{{ ip }}">
+                                    {{ip}}
+                                    </button>
+                            </h2>
+                            <div id="collapseOne{{ ip }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ ip }}" data-bs-parent="#Vulnaccordion{{ ip }}">
+                                <div class="accordion-body">
+                                    <p>Server vulns : </p>
+
+                                    {% for vuln in data[ip]["vulns"] %}
+                                    <div class="accordion" id="Vulnaccordion{{vuln['template-id']}}">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingOne{{vuln['template-id']}}">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{vuln['template-id']}}" aria-expanded="true" aria-controls="collapseOne{{vuln['template-id']}}">
+                                                    {{vuln["info"]["name"]}} - {{vuln["info"]["severity"]}}
+                                                    </button>
+                                            </h2>
+                                            <div id="collapseOne{{vuln['template-id']}}" class="accordion-collapse collapse" aria-labelledby="headingOne{{vuln['template-id']}}" data-bs-parent="#Vulnaccordion{{vuln['template-id']}}">
+                                                <div class="accordion-body">
+                                                    <script src="https://unpkg.com/bootstrap-table@1.16.0/dist/bootstrap-table.min.js"></script>
+                                                    <script type="text/javascript">
+                                                        $(document).ready(function () {
+                                                    
+                                                        // Use the given data to create 
+                                                        // the table and display it
+                                                        $('table').bootstrapTable({
+                                                            data: mydata
+                                                        });
+                                                        });
+                                                    
+                                                        // Specify the JSON data to be displayed
+                                                        var mydata = {{ vuln }}
+                                                    </script>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                        
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
