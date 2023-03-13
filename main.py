@@ -32,6 +32,7 @@ def recursive_subdomains(subs : list, wt :int, wd :str, mode :str, domain :str) 
             logger.info("Wordlist testing...")
             temp_subs += sh.from_wordlist_thread(subdomain, wt, f"wordlists/{wd}.txt")
             logger.info("Wordlist testing done")
+        print("\n") # some space between each subdomain
         temp_subs = rp.delete_occurences(temp_subs)
     for subdomain in temp_subs:
         if subdomain not in subs:
