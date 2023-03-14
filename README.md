@@ -1,4 +1,4 @@
-<p align="center"> <img src="readme/banner.png"></p>
+<p align="center"> <img src="readme/Banner.png"></p>
 
 [![PyPI - Python](https://img.shields.io/badge/python-v3%2E8-181717?logo=python&style=for-the-badge)](https://github.com/ugomeguerditchian/OrgASM)
 ![Lines of code](https://img.shields.io/tokei/lines/github.com/ugomeguerditchian/OrgASM?style=for-the-badge)
