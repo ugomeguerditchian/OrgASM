@@ -10,6 +10,9 @@ import json
 import re
 from pprint import pprint
 import argparse
+from jinja2 import Template
+import json
+import sys
 logger = cl.logger
 
 
@@ -58,9 +61,8 @@ def menu():
     argpars.add_argument("-sT", "--subdomainsThreads", default=500, type=int, required=False, help="Number of threads to use for check real subdomains(default 500)")
     argpars.add_argument("-cP", "--checkPortsThreads", default=30, type=int, required=False, help="Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)")
     argpars.add_argument("-dT", "--detectTechno", default=True, type=bool, required=False, help="Detect techno used by subdomains (default True) (deactivate with False)")
-    argpars.add_argument("-vuln", "--vulnScan", default=False, type=bool, required=False, help="Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default False) (activate with True)")
+    argpars.add_argument("-vuln", "--vulnScan", default=False, action="store_true", help="Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default False)")
     argpars.add_argument("-vulnconf", "--vulnConfig", default="", type=str, required=False, help="Path to config file for nuclei (default is the default config)")
-    argpars.add_argument("-o", "--output", default=False, action="store_true", help="If provided > save the results, default is False")
 
     args = argpars.parse_args()
     mode = args.mode
@@ -80,16 +82,13 @@ def menu():
     else:
         domain = input("Enter domain to scan: ")
     
-
-    output = args.output
-
     final_dict_result = {}
     #ask for domain name
     # Check if the domain name is valid with regex
     while not re.match(r"^[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}$", domain):
         logger.error("Invalid domain name")
         domain = input("Enter domain name: ")
-    
+     
     if args.subfile:
         all_results=[]
         with open(args.subfile, "r") as file:
@@ -230,23 +229,27 @@ def menu():
         pprint(final_dict_result)
         logger.info("Done")
 
-    if not output:
-        save=""
-        while save.lower() != "y" and save.lower() != "n":
-            save = input("Do you want to save the result? (y/n): ")
-    else:
-        if output:
-            save = "y"
-        else :
-            save = "n"
+    
     if not os.path.exists("exports"):
         os.mkdir("exports")
-    if save.lower() == "y":
-        date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        file_name = f"result_{domain.replace('.','-')}_{date}.json"
-        with open("exports/"+domain+"/"+file_name, "w") as f:
-            json.dump(final_dict_result, f, indent=4)
-        logger.info(f"File saved in exports/{file_name}")
+
+    date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    file_name = f"result_{domain.replace('.','-')}_{date}.json"
+    with open("exports/"+domain+"/"+file_name, "w") as f:
+        json.dump(final_dict_result, f, indent=4)
+    logger.info(f"File saved in exports/{file_name}")
+
+    template = Template(open("website/jinja_template.html").read(), autoescape=True)
+    html = template.render(data=final_dict_result, metadata={"version": "1.0.0"})
+    with open(f"exports/{domain}/html_report_{domain}_{date}.html", "w") as file:
+        file.write(html)
+    logger.info(f"HTML report saved in exports/{domain}/html_report_{domain}_{date}.html")
+    input("Press enter to open the result in your browser...")
+    path = os.sep.join([os.getcwd(),f"exports/{domain}/html_report_{domain}_{date}.html"])
+    if os.name == "nt":
+        os.startfile(path)
+    if sys.platform.startswith("linux"):
+        os.system("xdg-open " + path)
     logger.info("Exiting...")
 
 if __name__ == "__main__":
