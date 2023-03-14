@@ -244,6 +244,7 @@ aria-controls="{{ dataBsTarget }}">
                                             <th scope="col">Port</th>
                                             <th scope="col">Techno</th>
                                             <th scope="col">Version</th>
+                                            <th scope="col">Headers</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -255,6 +256,7 @@ aria-controls="{{ dataBsTarget }}">
                                                         <td>{{port}}</td>
                                                         <td>{{item["name"]}}</td>
                                                         <td>{{item["version"]}}</td>
+                                                        <td>{{tech["headers"]}}</td>
                                                     </tr>
                                                     {% endif %}
                                                 {% endfor %}
