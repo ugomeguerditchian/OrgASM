@@ -298,7 +298,40 @@
                    <div class="accordion-item">
                        <h2 class="accordion-header"
                            id="headingOneAll">
-                           {{ buttonAccordion("All", 2, "collapseOneAll") }}
+                           {% set ns = namespace(info=0, low=0, medium=0, high=0, critical=0)%}
+                            {% for ip in data %}
+                                {% if ip != "dead_subdomains" %}
+                                    {% for vuln in data[ip]["vulns"] %}
+                                        {% if "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "critical" %}
+                                            {% set ns.critical = ns.critical + 1 %}  
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "info" %}
+                                            {% set ns.info = ns.info + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "low" %}
+                                            {% set ns.low = ns.low + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "medium" %}
+                                            {% set ns.medium = ns.medium + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "high" %}
+                                            {% set ns.high = ns.high + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for sub, vulns in data[ip]["subdomains"]["vulns"].items() %}
+                                        {% for vuln in vulns %}
+                                            {% if "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "critical" %}
+                                                {% set ns.critical = ns.critical + 1 %}  
+                                            {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "info" %}
+                                                {% set ns.info = ns.info + 1 %}
+                                            {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "low" %}
+                                                {% set ns.low = ns.low + 1 %}
+                                            {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "medium" %}
+                                                {% set ns.medium = ns.medium + 1 %}
+                                            {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "high" %}
+                                                {% set ns.high = ns.high + 1 %}
+                                            {% endif %}
+                                        {% endfor%}
+                                    {% endfor%}
+                                {% endif %}
+                            {% endfor %}
+                           {{ buttonAccordion("All", [ns.critical,ns.high,ns.medium,ns.low,ns.info], "collapseOneAll") }}
                        </h2>
                        <div id="collapseOneAll"
                             class="accordion-collapse collapse"
