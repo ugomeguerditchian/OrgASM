@@ -22,54 +22,63 @@
     {{ text[0]|upper}}{{text[1:] }}
 {% endmacro %}
 {% macro enhance_title(title) -%}
-{% if "subdomain_withdomain" in title %}
-{{title | replace("subdomain_withdomain", "Subdomain with Domain")}}
-{% elif "subdomain_withoutdomain" in title %}
-{{title | replace("subdomain_withoutdomain", "Subdomain without Domain")}}
-{% elif "subdomain_with_redirect" in title %}
-{{title | replace("subdomain_with_redirect", "Subdomain with Redirect")}}
-{% else %}
-{{title}}
-{% endif %}
+    {% if "subdomain_withdomain" in title %}
+        {{title | replace("subdomain_withdomain", "Subdomain with Domain")}}
+    {% elif "subdomain_withoutdomain" in title %}
+        {{title | replace("subdomain_withoutdomain", "Subdomain without Domain")}}
+    {% elif "subdomain_with_redirect" in title %}
+        {{title | replace("subdomain_with_redirect", "Subdomain with Redirect")}}
+    {% else %}
+        {{title}}
+    {% endif %}
 {%- endmacro %}
 {% macro buttonAccordion(text, length, dataBsTarget) -%}
-<button class="accordion-button d-flex justify-content-between align-items-start collapsed"
-type="button"
-data-bs-toggle="collapse"
-data-bs-target="#{{ dataBsTarget }}"
-aria-expanded="false"
-aria-controls="{{ dataBsTarget }}">
-    <div class="d-flex justify-content-between flex-grow-1 me-4">
-        <div class="ms-2 me-auto">
-            {{enhance_title(text)}}
+    <button class="accordion-button d-flex justify-content-between align-items-start collapsed"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#{{ dataBsTarget }}"
+    aria-expanded="false"
+    aria-controls="{{ dataBsTarget }}">
+        <div class="d-flex justify-content-between flex-grow-1 me-4">
+            <div class="ms-2 me-auto">
+                {{enhance_title(text)}}
+            </div>
+            {% if length|length == 1 %}
+                <span class="badge bg-primary rounded-pill">{{length[0]}}</span>
+            {% elif length|length > 1%}
+                {%set colors = ['text-bg-dark', 'text-bg-danger', 'text-bg-warning', 'text-bg-info', 'text-bg-secondary']%}
+                {% for score in length %}
+                    {% if score > 0 %}
+                        <span class="badge {{colors[loop.index-1]}} rounded-pill ms-2">{{score}}</span>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </div>
-        <span class="badge bg-primary rounded-pill">{{length}}</span>
-    </div>
-</button>
+    </button>
 {%- endmacro %}
 {% macro tableCustom(title, keys, table) -%}
-{% if table|length > 0%}
-    <h4>{{title}}</h4>
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                {% for key in keys %}
-                <th scope="col"
-                    class="bold">{{sentence_case(key)}}</th>
+    {% if table|length > 0%}
+        <h4>{{title}}</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    {% for key in keys %}
+                    <th scope="col"
+                        class="bold">{{sentence_case(key)}}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table %}
+                <tr>
+                    {% for key in keys %}
+                        <td scope="col">{{row[key]}}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in table %}
-            <tr>
-                {% for key in keys %}
-                    <td scope="col">{{row[key]}}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% endif %}
+            </tbody>
+        </table>
+    {% endif %}
 {%- endmacro %}
 <body>
     <div class="d-flex align-items-center justify-content-center">
@@ -130,7 +139,7 @@ aria-controls="{{ dataBsTarget }}">
                         <div class="accordion-item">
                             <h2 class="accordion-header"
                                 id="headingOne{{ subs_type }}{{ip | replace('.', '-')}}">
-                                {{ buttonAccordion(ip ~ " - " ~ subs_type, value|length, "collapseOne" ~ subs_type ~ ip | replace('.', '-')) }}
+                                {{ buttonAccordion(ip ~ " - " ~ subs_type, [value|length], "collapseOne" ~ subs_type ~ ip | replace('.', '-')) }}
                             </h2>
                             <div id="collapseOne{{ subs_type }}{{ip | replace('.', '-')}}"
                                  class="accordion-collapse collapse"
@@ -196,7 +205,7 @@ aria-controls="{{ dataBsTarget }}">
                         <div class="accordion-item">
                             <h2 class="accordion-header"
                                 id="headingDeads">
-                                {{ buttonAccordion("Dead subdomains", data[ip]|length, "collapseOneDeads")}}
+                                {{ buttonAccordion("Dead subdomains", [data[ip]|length], "collapseOneDeads")}}
                             </h2>
                             <div id="collapseOneDeads"
                                  class="accordion-collapse collapse"
@@ -230,7 +239,7 @@ aria-controls="{{ dataBsTarget }}">
                     <div class="accordion-item">
                         <h2 class="accordion-header"
                             id="headingOne{{ ip }}">
-                            {{ buttonAccordion(ip, data[ip]["ports"]|length, "collapseOne"+ip) }}
+                            {{ buttonAccordion(ip, [data[ip]["ports"]|length], "collapseOne"+ip) }}
                         </h2>
                         <div id="collapseOne{{ ip }}"
                              class="accordion-collapse collapse"
@@ -290,14 +299,28 @@ aria-controls="{{ dataBsTarget }}">
                     <div class="accordion-item">
                         <h2 class="accordion-header"
                             id="headingOne{{ ip }}">
-                            {{ buttonAccordion(ip, data[ip]["vulns"]|length, "collapseOne"+ip) }}
+                            {% set ns = namespace(info=0, low=0, medium=0, high=0, critical=0)%}
+                            {% for vuln in data[ip]["vulns"] %}
+                                {% if "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "critical" %}
+                                    {% set ns.critical = ns.critical + 1 %}  
+                                {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "info" %}
+                                    {% set ns.info = ns.info + 1 %}
+                                {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "low" %}
+                                    {% set ns.low = ns.low + 1 %}
+                                {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "medium" %}
+                                    {% set ns.medium = ns.medium + 1 %}
+                                {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "high" %}
+                                    {% set ns.high = ns.high + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ buttonAccordion(ip, [ns.critical,ns.high,ns.medium,ns.low,ns.info], "collapseOne"+ip) }}
                         </h2>
                         <div id="collapseOne{{ ip }}"
                              class="accordion-collapse collapse"
                              aria-labelledby="headingOne{{ ip }}"
                              data-bs-parent="#Vulnaccordion{{ ip }}">
                             <div class="accordion-body">
-                                <p>Server vulns : </p>
+                                <h2>Server vulns</h2>
                                 <div style="overflow-x:scroll">
                                     <table id="myTable" class="display nowrap">
                                         <thead>
@@ -375,11 +398,25 @@ aria-controls="{{ dataBsTarget }}">
                         <div class="accordion" id="Vulnaccordion{{ ip }}{{ sub }}">
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingOne{{ ip }}{{ sub }}">
-                                    {{ buttonAccordion(ip + " - " + sub, data[ip]["subdomains"]["vulns"][sub]|length, "collapseOne"+ip+sub) }}
+                                    {% set ns = namespace(info=0, low=0, medium=0, high=0, critical=0)%}
+                                    {% for vuln in data[ip]["subdomains"]["vulns"][sub] %}
+                                        {% if "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "critical" %}
+                                            {% set ns.critical = ns.critical + 1 %}  
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "info" %}
+                                            {% set ns.info = ns.info + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "low" %}
+                                            {% set ns.low = ns.low + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "medium" %}
+                                            {% set ns.medium = ns.medium + 1 %}
+                                        {% elif "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "high" %}
+                                            {% set ns.high = ns.high + 1 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ buttonAccordion(ip~" - "~sub, [ns.critical,ns.high,ns.medium,ns.low,ns.info], "collapseOne"~ip~sub) }}
                                 </h2>
                                 <div id="collapseOne{{ ip }}{{ sub }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ ip }}{{ sub }}" data-bs-parent="#Vulnaccordion{{ ip }}{{ sub }}">
                                     <div class="accordion-body">
-                                        <p>Website {{ sub }} vulns : </p>
+                                        <h2>Website {{ sub }} vulns</h2>
                                         <div style="overflow-x:scroll">
                                             <table id='#myTable{{ sub|replace(".","_") }}' class="display nowrap">
                                                 <thead>
