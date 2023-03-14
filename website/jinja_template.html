@@ -272,7 +272,7 @@
                                                         <td>{{port}}</td>
                                                         <td>{{item["name"]}}</td>
                                                         <td>{{item["version"]}}</td>
-                                                        <td>{{tech["headers"]}}</td>
+                                                        <td>{% if tech["headers"] != [] %}{{ tech["headers"]}}{% endif %}</td>
                                                     </tr>
                                                     {% endif %}
                                                 {% endfor %}
@@ -345,7 +345,7 @@
                             aria-labelledby="headingOneAll"
                             data-bs-parent="#VulnaccordionAll">
                            <div class="accordion-body">
-                            <div>
+                            <div style="overflow-x:scroll">
                                 <table id="myTableAll" class="display nowrap" style="width:100%">
                                     <thead>
                                         <tr>
@@ -485,7 +485,7 @@
                              data-bs-parent="#Vulnaccordion{{ ip }}">
                             <div class="accordion-body">
                                 <h2>Server vulns</h2>
-                                <div>
+                                <div style="overflow-x:scroll">
                                     <table id="myTable" class="display nowrap" style="width:100%">
                                         <thead>
                                             <tr>
@@ -581,7 +581,7 @@
                                 <div id="collapseOne{{ ip }}{{ sub }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ ip }}{{ sub }}" data-bs-parent="#Vulnaccordion{{ ip }}{{ sub }}">
                                     <div class="accordion-body">
                                         <h2>Website {{ sub }} vulns</h2>
-                                        <div>
+                                        <div style="overflow-x:scroll">
                                             <table id='#myTable{{ sub|replace(".","_") }}' class="display nowrap" style="width:100%">
                                                 <thead>
                                                     <tr>
@@ -662,7 +662,8 @@
     <script>
         $(document).ready(function () {
             $('table.display').DataTable({
-                scrollX: true,
+                
+                
             });
         });
     </script>
