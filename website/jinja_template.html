@@ -18,9 +18,20 @@
     <script src="https://cdn.datatables.net/v/bs5/dt-1.13.4/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.1/datatables.min.js"></script>
 </head>
 <!-- macros -->
-{% macro sentence_case(text) %}
+{% macro sentence_case(text) -%}
     {{ text[0]|upper}}{{text[1:] }}
 {% endmacro %}
+{% macro enhance_title(title) -%}
+{% if "subdomain_withdomain" in title %}
+{{title | replace("subdomain_withdomain", "Subdomain with Domain")}}
+{% elif "subdomain_withoutdomain" in title %}
+{{title | replace("subdomain_withoutdomain", "Subdomain without Domain")}}
+{% elif "subdomain_with_redirect" in title %}
+{{title | replace("subdomain_with_redirect", "Subdomain with Redirect")}}
+{% else %}
+{{title}}
+{% endif %}
+{%- endmacro %}
 {% macro buttonAccordion(text, length, dataBsTarget) -%}
 <button class="accordion-button d-flex justify-content-between align-items-start collapsed"
 type="button"
@@ -30,7 +41,7 @@ aria-expanded="false"
 aria-controls="{{ dataBsTarget }}">
     <div class="d-flex justify-content-between flex-grow-1 me-4">
         <div class="ms-2 me-auto">
-            {{text}}
+            {{enhance_title(text)}}
         </div>
         <span class="badge bg-primary rounded-pill">{{length}}</span>
     </div>
@@ -263,7 +274,6 @@ aria-controls="{{ dataBsTarget }}">
                 </div>
                 {% endif %}
                 {% endfor %}
-
                 </div>
             </div>
             <div class="tab-pane fade d-flex gap-2 flex-column"
@@ -365,9 +375,7 @@ aria-controls="{{ dataBsTarget }}">
                         <div class="accordion" id="Vulnaccordion{{ ip }}{{ sub }}">
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingOne{{ ip }}{{ sub }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne{{ ip }}{{ sub }}" aria-expanded="false" aria-controls="collapseOne{{ ip }}">
-                                        {{ip}} - {{sub}}
-                                        </button>
+                                    {{ buttonAccordion(ip + " - " + sub, data[ip]["subdomains"]["vulns"][sub]|length, "collapseOne"+ip+sub) }}
                                 </h2>
                                 <div id="collapseOne{{ ip }}{{ sub }}" class="accordion-collapse collapse" aria-labelledby="headingOne{{ ip }}{{ sub }}" data-bs-parent="#Vulnaccordion{{ ip }}{{ sub }}">
                                     <div class="accordion-body">
