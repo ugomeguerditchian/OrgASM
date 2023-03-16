@@ -78,10 +78,23 @@ def menu():
     if mode == "S":
         logger.error("Cannot use only IP scan mode, you have to use at least one of the other modes with it")
 
-    # help for argpars
     domain = ""
     if args.domain:
         domain = args.domain
+    
+    if args.ip :
+        domain = args.ip
+    elif args.ipfile :
+        domain = "multiple_ips"
+    elif args.network :
+        if "/" in args.network:
+            domain = args.network.split("/")[0]
+        else :
+            domain = args.network
+    else :
+        domain = args.domain
+    # help for argpars
+    
     
     if args.limit and args.recursive > 0:
         logger.warning("It's recommended to set recursive to 0 when using limit mode")
@@ -418,6 +431,9 @@ def menu():
     if not os.path.exists("exports"):
         os.mkdir("exports")
 
+   
+    if not os.path.exists("exports/"+domain):
+        os.mkdir("exports/"+domain)
     date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     file_name = f"result_{domain.replace('.','-')}_{date}.json"
     with open("exports/"+domain+"/"+file_name, "w") as f:
