@@ -13,6 +13,7 @@ import subprocess
 import json
 from datetime import datetime
 import copy
+from scapy.all import ARP, Ether, srp
 
 def get_ip(domain):
     #get the ip address from the domain
@@ -21,6 +22,30 @@ def get_ip(domain):
         return ip
     except:
         return None
+
+def get_ip_from_network(network: str) :
+    #scan the network and retrieve the ip addresses
+    #return the ip addresses
+    if not "/" in network:
+        network = network + "/24"
+    #create the arp request
+    arp = ARP(pdst=network)
+    #create the ether broadcast packet
+    #ff:ff:ff:ff:ff:ff MAC address indicates broadcasting
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
+    #stack them
+    packet = ether/arp
+    #send the packet and receive a response
+    result = srp(packet, timeout=3, verbose=0)[0]
+    #a list of clients, we will fill this in the upcoming loop
+    clients = []
+    for sent, received in result:
+        #for each response, append ip and mac address to `clients` list
+        clients.append({'ip': received.psrc, 'mac': received.hwsrc})
+    #print clients
+    return clients
+    
+
 
 # returns True if a connection can be made, False otherwise
 def test_port_number(host, port):

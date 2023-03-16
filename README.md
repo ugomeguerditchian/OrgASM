@@ -16,7 +16,8 @@ In the very next future it will be shodan and censys friendly 🙌
 We will also soon released the dorking compatibility and web parser 🥸
 
 ## Features
-
+- Can scan a domain, a network or a list of IPs
+- Can be limited to a given scope (domain or subdomains given in a file)
 - Obtaining results via [Alienvault](https://otx.alienvault.com/), [Hackertarget](https://hackertarget.com/) and [crt.sh](https://crt.sh/)
 - Web, JSON and TXT export
 - Possibility to add a list of already knows subdomains
@@ -38,39 +39,41 @@ Install **OrgASM** with pip
   git clone https://github.com/ugomeguerditchian/OrgASM
   cd OrgASM
   pip install -r requirements.txt
-  usage: main.py [-h] [-d DOMAIN] [-m MODE] [-sF SUBFILE] [-R RECURSIVE] [-w WORDLIST] [-wT WORDLISTTHREADS]
-               [-iS IPSCANTYPE] [-iT IPTHREADS] [-sT SUBDOMAINSTHREADS] [-cP CHECKPORTSTHREADS] [-dT DETECTTECHNO]
-               [-vuln] [-vulnconf VULNCONFIG]
+  usage: main.py [-h] [-d DOMAIN] [-ip IP] [-net NETWORK] [-m MODE] [-sF SUBFILE] [-ipF IPFILE] [-R RECURSIVE] [-w WORDLIST] [-wT WORDLISTTHREADS] [-iS IPSCANTYPE] [-iT IPTHREADS] [-sT SUBDOMAINSTHREADS]
+               [-cP CHECKPORTSTHREADS] [-dT DETECTTECHNO] [-vuln] [-vulnconf VULNCONFIG] [-limit]
 
-options:
-  -h, --help            show this help message and exit
-  -d DOMAIN, --domain DOMAIN
-                        Domain to scan
-  -m MODE, --mode MODE  Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)
-  -sF SUBFILE, --subfile SUBFILE
-                        Path to file with subdomains, one per line
-  -R RECURSIVE, --recursive RECURSIVE
-                        Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
-  -w WORDLIST, --wordlist WORDLIST
-                        Wordlist to use (small, medium(default), big)
-  -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
-                        Number of threads to use for Wordlist(default 500)
-  -iS IPSCANTYPE, --IPScanType IPSCANTYPE
-                        Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP
-                        containtaining domain given but with a redirect, A: All subdomains detected
-  -iT IPTHREADS, --IPthreads IPTHREADS
-                        Number of threads to use for IP scan(default 2000)
-  -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
-                        Number of threads to use for check real subdomains(default 500)
-  -cP CHECKPORTSTHREADS, --checkPortsThreads CHECKPORTSTHREADS
-                        Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check
-                        if it's a webport (default True) (deactivate with 0)
-  -dT DETECTTECHNO, --detectTechno DETECTTECHNO
-                        Detect techno used by subdomains (default True) (deactivate with False)
-  -vuln, --vulnScan     Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default
-                        False)
-  -vulnconf VULNCONFIG, --vulnConfig VULNCONFIG
-                        Path to config file for nuclei (default is the default config)
+  options:
+    -h, --help            show this help message and exit
+    -d DOMAIN, --domain DOMAIN
+                          Domain to scan
+    -ip IP, --ip IP       IP to scan
+    -net NETWORK, --network NETWORK
+                          Network to scan, don't forget the CIDR (ex: 192.168.1.0/24)
+    -m MODE, --mode MODE  Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)
+    -sF SUBFILE, --subfile SUBFILE
+                          Path to file with subdomains, one per line
+    -ipF IPFILE, --ipfile IPFILE
+                          Path to file with IPs, one per line
+    -R RECURSIVE, --recursive RECURSIVE
+                          Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
+    -w WORDLIST, --wordlist WORDLIST
+                          Wordlist to use (small, medium(default), big)
+    -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
+                          Number of threads to use for Wordlist(default 500)
+    -iS IPSCANTYPE, --IPScanType IPSCANTYPE
+                          Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected
+    -iT IPTHREADS, --IPthreads IPTHREADS
+                          Number of threads to use for IP scan(default 2000)
+    -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
+                          Number of threads to use for check real subdomains(default 500)
+    -cP CHECKPORTSTHREADS, --checkPortsThreads CHECKPORTSTHREADS
+                          Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)
+    -dT DETECTTECHNO, --detectTechno DETECTTECHNO
+                          Detect techno used by subdomains (default True) (deactivate with False)
+    -vuln, --vulnScan     Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default False)
+    -vulnconf VULNCONFIG, --vulnConfig VULNCONFIG
+                          Path to config file for nuclei (default is the default config)
+    -limit, --limit       Limit the scope of scan to the domain given or the subdomains given in the file (-sF) (default False)
 ```
 
 > :memo: **Note:** help with `python main.py -h`
@@ -85,6 +88,43 @@ IPs | Ports | Techno tab :
 
 Vulnerabilities tab :
 ![Web Export Vulnerabilities tab](readme/vulns.png)
+
+## Usecases
+
+- Map surface attack from a domain :
+```
+python main.py -d domain.fr
+```
+- Scan an IP :
+```
+python main.py -ip 1.1.1.1
+```
+- Scan a network :
+```
+python main.py -net 192.168.1.0/24
+```
+- Scan multiple IPs :
+```
+python main.py -ipF /path/to/ips.txt
+```
+
+
+- Map surface attack from a domain and scan for vulnerabilities :
+```
+python main.py -d domain.fr -vuln
+```
+- Map surface attack from a domain and scan for vulnerabilities with a custom config file :
+```
+python main.py -d domain.fr -vuln -vulnconf /path/to/config.yaml
+```
+- Map surface attack from a domain and scan for vulnerabilities and limit the scope to the domain given :
+```
+python main.py -d domain.fr -vuln -limit
+```
+- Map surface attack from a domain and scan for vulnerabilities and limit the scope to the subdomains given in the file (-sF) :
+```
+python main.py -d domain.fr -vuln -sF /path/to/subdomains.txt
+```
 
 
 
