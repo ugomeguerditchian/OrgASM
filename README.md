@@ -123,7 +123,7 @@ python main.py -d domain.fr -vuln -limit
 ```
 - Map surface attack from a domain and scan for vulnerabilities and limit the scope to the subdomains given in the file (-sF) :
 ```
-python main.py -d domain.fr -vuln -sF /path/to/subdomains.txt
+python main.py -d domain.fr -vuln -sF /path/to/subdomains.txt -limit
 ```
 
 
@@ -132,6 +132,9 @@ python main.py -d domain.fr -vuln -sF /path/to/subdomains.txt
 
 - [X] Service scanning amelioration
 - [x] Added Web GUI !
+- [X] Add IP scan
+- [X] Add Network scan
+- [X] Added scope limitation
 - [ ] Add DNS transfer zone test
 - [X] Recursive scan for subdomains bruteforcing
 - [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
