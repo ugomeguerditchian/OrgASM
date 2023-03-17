@@ -208,13 +208,6 @@ def menu():
             all_results = temp_all_results
 
             cl.logger.info("Checking subdomains done")
-        # for result in all_results:
-        #     print("DNS testing : " + str(round(all_results.index(result) / len(all_results) * 100, 2)) + "% ", end="\r")
-        #     #dns_request.main return a list
-        #     #join all the list in one list
-        #     dns_result += dns_request.main(result, args.dnsThreads)
-        # all_results+= dns_result
-        # logger.info("DNS testing done")
             logger.info("Deleting occurences...")
             all_results = rp.delete_occurences(all_results)
         else :

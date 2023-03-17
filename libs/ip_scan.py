@@ -279,7 +279,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode :str, vulnconf :str) -> di
         for ip in ip_dict:
             ip_dict[ip]["vulns"] = []
             for result in nuclei_results:
-                if result["host"] == ip or result["ip"] == ip or result["host"] == "https://"+ip:
+                if result["host"] == ip or result["host"] == "https://"+ip or result["ip"]:
                     ip_dict[ip]["vulns"].append(result)
         #add vulns key to subdomains and add the nuclei results, split the 'https://' from the subdomain
 
