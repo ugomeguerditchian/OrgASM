@@ -14,6 +14,7 @@ from jinja2 import Template
 import json
 import sys
 import time
+import requests
 logger = cl.logger
 
 def clear_screen():
@@ -28,7 +29,7 @@ def check_update():
         with open("manifest", "r") as f:
             version = f.read()
         url = f"https://raw.githubusercontent.com/ugomeguerditchian/OrgASM/main/manifest"
-        response = dns_request.get(url)
+        response = requests.get(url).text
         if response == version:
             logger.info("You are up to date")
         else:
