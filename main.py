@@ -13,8 +13,30 @@ import argparse
 from jinja2 import Template
 import json
 import sys
+import time
 logger = cl.logger
 
+def clear_screen():
+    if sys.platform == "win32":
+        os.system("cls")
+    else:
+        os.system("clear")
+
+def check_update():
+    logger.info("Checking for update...")
+    try:
+        with open("manifest", "r") as f:
+            version = f.read()
+        url = f"https://raw.githubusercontent.com/ugomeguerditchian/OrgASM/main/manifest"
+        response = dns_request.get(url)
+        if response == version:
+            logger.info("You are up to date")
+        else:
+            logger.warning("Update available, please download the new version on https://github.com/ugomeguerditchian/OrgASM")
+            logger.info("Resume in 3 seconds...")
+            time.sleep(3)
+    except Exception as e:
+        logger.error("Impossible to check for update")
 
 def recursive_subdomains(subs : list, wt :int, wd :str, mode :str, domain :str) -> list:
     temp_subs = []
@@ -72,6 +94,7 @@ def menu():
     wordlist_size = args.wordlist
     wordlist_thread_number = int(args.wordlistThreads)
     #verify mode
+    check_update()
     if len(mode) > 3 or len(mode) < 1 or not re.match("^[OBS]+$", mode):
         logger.error("Mode not valid, must be O B or S (or concatenation like : OS, OB, OBS)")
         exit(1)
@@ -173,11 +196,7 @@ def menu():
             for sub in to_remove:
                 all_results.remove(sub)
         #clear the screen
-        try :
-            os.system("cls")
-        except:
-            # linux
-            os.system("clear")
+        clear_screen()
         
         logger.info(f"Actually creating the list of subdomains at : exports/{domain}/dynamic_sub_save.txt")
         rp.dynamic_save(all_results, domain, "create")
