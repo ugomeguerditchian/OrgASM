@@ -14,6 +14,9 @@ import json
 from datetime import datetime
 import copy
 from scapy.all import ARP, Ether, srp
+import time
+import random
+
 
 def get_ip(domain):
     #get the ip address from the domain
@@ -46,6 +49,20 @@ def get_ip_from_network(network: str) :
     return clients
     
 
+def check_filtered(host):
+    target_ports = range(30000, 65535)
+    start = time.time()
+    for i in random.sample(target_ports, 10):
+        try:
+            s = socket(AF_INET, SOCK_STREAM)
+            s.settimeout(1)
+            s.connect((host, i))
+            s.close()
+        except:
+            pass
+    end = time.time()
+    if end - start < 5:
+        return True
 
 # returns True if a connection can be made, False otherwise
 def test_port_number(host, port):
@@ -56,13 +73,17 @@ def test_port_number(host, port):
         # connecting may fail
         try:
             # attempt to connect
+            start = time.time()
             sock.connect((host, port))
             # a successful connection was made
+            end = time.time()
+            #close the socket
+            sock.close()
             return True
         except:
             # ignore the failure
             return False
-    
+
 def port_scan(host, ports):
     open_ports = []
     logger.info(f'Scanning {host}...')
@@ -80,6 +101,10 @@ def port_scan(host, ports):
 def port_scan_with_thread_limit(host: str, ports:range, thread_number: int):
     #scan the host with the ports with a thread limit
     #return the open ports
+    logger.info(f'Checking if {host} filtered...')
+    if check_filtered(host):
+        logger.warning(f'{host} is filtered')
+        return []
     open_ports = []
     logger.info(f'Scanning {host}...')
     # create the thread pool

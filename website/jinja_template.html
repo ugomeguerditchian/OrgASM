@@ -136,7 +136,7 @@
                  tabindex="0">
                 <div class="d-flex gap-2 flex-column">
                     {% for ip in data %}
-                    {% if ip != "dead_subdomains" %}
+                    {% if ip != "dead_subdomains"  and ip !="dns_exist"%}
                     {% for subs_type, value in data[ip]["subdomains"].items() %}
                     {% if subs_type != "web_techno" and subs_type != "vulns" and
                     data[ip]["subdomains"][subs_type]|length >
@@ -206,7 +206,7 @@
                     </div>
                     {% endif %}
                     {% endfor %}
-                    {% else %}
+                    {% elif ip=="dead_subdomains" %}
                     <div class="accordion"
                          id="Deadsaccordion">
                         <div class="accordion-item">
@@ -218,6 +218,28 @@
                                  class="accordion-collapse collapse"
                                  aria-labelledby="headingDeads"
                                  data-bs-parent="#Deadsaccordion">
+                                <div class="accordion-body">
+                                    <ul class="list-group">
+                                        {% for sub in data[ip] %}
+                                        <li class="list-group-item">{{sub}}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif ip=="dns_exist" %}
+                    <div class="accordion"
+                         id="Dnsaccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"
+                                id="headingDns">
+                                {{ buttonAccordion("Dead subdomains", [data[ip]|length], "collapseOneDns")}}
+                            </h2>
+                            <div id="collapseOneDns"
+                                 class="accordion-collapse collapse"
+                                 aria-labelledby="headingDns"
+                                 data-bs-parent="#Dnsaccordion">
                                 <div class="accordion-body">
                                     <ul class="list-group">
                                         {% for sub in data[ip] %}
@@ -240,7 +262,7 @@
                 <div class="d-flex gap-2 flex-column">
 
                 {% for ip in data %}
-                {% if ip != "dead_subdomains" %}
+                {% if ip != "dead_subdomains"  and ip !="dns_exist"%}
                 <div class="accordion"
                      id="IPsaccordion{{ ip }}">
                     <div class="accordion-item">
@@ -307,7 +329,7 @@
                            id="headingOneAll">
                            {% set ns = namespace(info=0, low=0, medium=0, high=0, critical=0)%}
                             {% for ip in data %}
-                                {% if ip != "dead_subdomains" %}
+                                {% if ip != "dead_subdomains"  and ip !="dns_exist" and "vulns" in data[ip] %}
                                     {% for vuln in data[ip]["vulns"] %}
                                         {% if "info" in vuln and "severity" in vuln["info"] and vuln["info"]["severity"] == "critical" %}
                                             {% set ns.critical = ns.critical + 1 %}  
@@ -380,7 +402,7 @@
                                         </thead>
                                         <tbody>
                                         {% for ip in data %}
-                                            {% if ip != "dead_subdomains" %}
+                                            {% if ip != "dead_subdomains"  and ip !="dns_exist" and "vulns" in data[ip]["subdomains"] %}
                                                 {% for sub, vulns in data[ip]["subdomains"]["vulns"].items() %}
                                                     {% for vuln in vulns %}
                                                         <tr>
@@ -415,38 +437,40 @@
                                                         </tr>
                                                     {% endfor %}
                                                 {% endfor %}
-                                                {% for vuln in data[ip]["vulns"] %} 
-                                                    <tr>
-                                                        <td>{% if "info" in vuln and "name" in vuln["info"] %}{{vuln["info"]["name"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "severity" in vuln["info"] %}{{vuln["info"]["severity"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "classification" in vuln["info"] and "cve-id" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cve-id"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "classification" in vuln["info"] and "cwe-id" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cwe-id"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "classification" in vuln["info"] and "cvss-metrics" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cvss-metrics"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "classification" in vuln["info"] and "cvss-score" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cvss-score"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "description" in vuln["info"] %}{{vuln["info"]["description"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "reference" in vuln["info"] %}{{vuln["info"]["reference"]}}{% endif %}</td>
-                                                        <td>{% if "type" in vuln %}{{vuln["type"]}}{% endif %}</td>
-                                                        <td>{% if "host" in vuln %}{{vuln["host"]}}{% endif %}</td>
-                                                        <td>{% if "matched-at" in vuln %}{{vuln["matched-at"]}}{% endif %}</td>
-                                                        <td>{% if "extracted-results" in vuln %}{{vuln["extracted-results"]}}{% endif %}</td>
-                                                        <td>{% if "ip" in vuln %}{{vuln["ip"]}}{% endif %}</td>
-                                                        <td>{% if "timestamp" in vuln %}{{vuln["timestamp"]}}{% endif %}</td>
-                                                        <td>{% if "curl-command" in vuln %}{{vuln["curl-command"]}}{% endif %}</td>
-                                                        <td>{% if "matcher-status" in vuln %}{{vuln["matcher-status"]}}{% endif %}</td>
-                                                        <td>{% if "matched-line" in vuln %}{{vuln["matched-line"]}}{% endif %}</td>
-                                                        <td>{% if "matcher-name" in vuln %}{{vuln["matcher-name"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "tags" in vuln["info"] %}{{vuln["info"]["tags"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "metadata" in vuln["info"] and "verified" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["verified"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "metadata" in vuln["info"] and "fofa-query" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["fofa-query"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "metadata" in vuln["info"] and "shodan-query" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["shodan-query"]}}{% endif %}</td>
-                                                        <td>{% if "template" in vuln %}{{vuln["template"]}}{% endif %}</td>
-                                                        <td>{% if "template-url" in vuln %}{{vuln["template-url"]}}{% endif %}</td>
-                                                        <td>{% if "template-id" in vuln %}{{vuln["template-id"]}}{% endif %}</td>
-                                                        <td>{% if "template-path" in vuln %}{{vuln["template-path"]}}{% endif %}</td>
-                                                        <td>{% if "info" in vuln and "author" in vuln["info"] %}{{vuln["info"]["author"]}}{% endif %}</td>
-                                                        
-                                                    </tr>
-                                                {% endfor %}
+                                                {% if "vulns" in data[ip] and data[ip]["vulns"] != [] %}
+                                                    {% for vuln in data[ip]["vulns"] %} 
+                                                        <tr>
+                                                            <td>{% if "info" in vuln and "name" in vuln["info"] %}{{vuln["info"]["name"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "severity" in vuln["info"] %}{{vuln["info"]["severity"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "classification" in vuln["info"] and "cve-id" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cve-id"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "classification" in vuln["info"] and "cwe-id" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cwe-id"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "classification" in vuln["info"] and "cvss-metrics" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cvss-metrics"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "classification" in vuln["info"] and "cvss-score" in vuln["info"]["classification"] %}{{vuln["info"]["classification"]["cvss-score"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "description" in vuln["info"] %}{{vuln["info"]["description"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "reference" in vuln["info"] %}{{vuln["info"]["reference"]}}{% endif %}</td>
+                                                            <td>{% if "type" in vuln %}{{vuln["type"]}}{% endif %}</td>
+                                                            <td>{% if "host" in vuln %}{{vuln["host"]}}{% endif %}</td>
+                                                            <td>{% if "matched-at" in vuln %}{{vuln["matched-at"]}}{% endif %}</td>
+                                                            <td>{% if "extracted-results" in vuln %}{{vuln["extracted-results"]}}{% endif %}</td>
+                                                            <td>{% if "ip" in vuln %}{{vuln["ip"]}}{% endif %}</td>
+                                                            <td>{% if "timestamp" in vuln %}{{vuln["timestamp"]}}{% endif %}</td>
+                                                            <td>{% if "curl-command" in vuln %}{{vuln["curl-command"]}}{% endif %}</td>
+                                                            <td>{% if "matcher-status" in vuln %}{{vuln["matcher-status"]}}{% endif %}</td>
+                                                            <td>{% if "matched-line" in vuln %}{{vuln["matched-line"]}}{% endif %}</td>
+                                                            <td>{% if "matcher-name" in vuln %}{{vuln["matcher-name"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "tags" in vuln["info"] %}{{vuln["info"]["tags"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "metadata" in vuln["info"] and "verified" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["verified"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "metadata" in vuln["info"] and "fofa-query" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["fofa-query"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "metadata" in vuln["info"] and "shodan-query" in vuln["info"]["metadata"] %}{{vuln["info"]["metadata"]["shodan-query"]}}{% endif %}</td>
+                                                            <td>{% if "template" in vuln %}{{vuln["template"]}}{% endif %}</td>
+                                                            <td>{% if "template-url" in vuln %}{{vuln["template-url"]}}{% endif %}</td>
+                                                            <td>{% if "template-id" in vuln %}{{vuln["template-id"]}}{% endif %}</td>
+                                                            <td>{% if "template-path" in vuln %}{{vuln["template-path"]}}{% endif %}</td>
+                                                            <td>{% if "info" in vuln and "author" in vuln["info"] %}{{vuln["info"]["author"]}}{% endif %}</td>
+                                                            
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
                                             {% endif %}
                                         {% endfor %}
                                         </tbody>
@@ -457,7 +481,7 @@
                     </div> 
                 </div>
                 {% for ip in data %}
-                {% if ip != "dead_subdomains" %}
+                {% if ip != "dead_subdomains"  and ip !="dns_exist" and "vulns" in data[ip]["subdomains"] and "vulns" in data[ip] %}
                 <div class="accordion"
                      id="Vulnaccordion{{ ip }}">
                     <div class="accordion-item">

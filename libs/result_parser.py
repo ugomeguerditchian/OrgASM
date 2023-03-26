@@ -19,7 +19,7 @@ def delete_star(list : list) -> list:
         if i != "*":
             new_list.append(i)
     return new_list
-def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_subdomains:list) -> dict :
+def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_subdomains:list, dns_exist:list) -> dict :
     #from the list of sudbomains return all subomains containing the domain
     """
     dict = {
@@ -32,7 +32,8 @@ def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_
         "subdomain_withdomain": [],
         "subdomain_withoutdomain": [],
         "subdomain_with_redirect": [],
-        "dead_subdomains": []
+        "dead_subdomains": [],
+        "dns_exist": []
     }
     for subdomain in list:
         if domain in subdomain:
@@ -41,6 +42,7 @@ def result_filter(list : list, domain : str, subdomain_with_redirect:list, dead_
             dict["subdomain_withoutdomain"].append(subdomain)
     dict["subdomain_with_redirect"] = subdomain_with_redirect
     dict["dead_subdomains"] = dead_subdomains
+    dict["dns_exist"] = dns_exist
     return dict
 
 def dynamic_save(all_results: dict, domain : str, mode : str):

@@ -1,4 +1,5 @@
 import requests
+import dns
 from pythonping import ping
 from concurrent.futures import ThreadPoolExecutor
 from urllib3.exceptions import InsecureRequestWarning
@@ -137,6 +138,13 @@ def check_up(url: str) -> bool:
     if response.status_code == 200:
         return True
     else:
+        return False
+
+def check_dns(domain: str) -> bool:
+    try:
+        dns.resolver.resolve(domain, 'A')
+        return True
+    except:
         return False
 
 if __name__ == "__main__":

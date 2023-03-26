@@ -224,7 +224,11 @@ def menu():
             subdomains_with_redirect=[]
             temp_all_results = []
             dead_subdomains = []
+            dns_exist = []
             temp_all_results, subdomains_with_redirect, dead_subdomains = dp.detect_redirect_with_thread_limit(all_results, args.subdomainsThreads)
+            for dead in dead_subdomains:
+                if dp.check_dns(dead):
+                    dns_exist.append(dead)
             all_results = temp_all_results
 
             cl.logger.info("Checking subdomains done")
@@ -233,9 +237,10 @@ def menu():
         else :
             subdomains_with_redirect = []
             dead_subdomains = []
+            dns_exist = []
         logger.info("All done")
         
-        final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect, dead_subdomains)
+        final_dict= rp.result_filter(all_results, domain, subdomains_with_redirect, dead_subdomains, dns_exist)
         logger.info(f"Subdomains containing {domain}:")
         for subdomain in final_dict["subdomain_withdomain"]:
             print(subdomain)
@@ -258,9 +263,11 @@ def menu():
             final_dict_result= ip_dict
             #pop dead_subdomains
             final_dict_result["dead_subdomains"] = final_dict["dead_subdomains"]
+            final_dict_result["dns_exist"] = final_dict["dns_exist"]
             pprint(final_dict_result)
             logger.info("Done")
             deads= final_dict_result.pop("dead_subdomains")
+            dns_exist = final_dict_result.pop("dns_exist")
             logger.info("IP scanning...")
             if args.IPScanType == "W":
                 for ip in final_dict_result :
@@ -296,6 +303,7 @@ def menu():
             logger.info("Detecting web ports done")
             logger.info("IP scanning results:")
             final_dict_result["dead_subdomains"]= deads
+            final_dict_result["dns_exist"] = dns_exist
             pprint(final_dict_result)
             logger.info("Done")
 
