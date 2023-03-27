@@ -35,15 +35,7 @@ def ping(ip: str) -> bool:
     if result:
         return True
     else:
-        #try to access to port 80
-        try:
-            s = socket(AF_INET, SOCK_STREAM)
-            s.settimeout(3)
-            s.connect((ip, 80))
-            s.close()
-            return True
-        except:
-            return False
+        return False
 
 
 def get_ip(domain):
@@ -126,8 +118,8 @@ def check_filtered(host):
 def port_scan_with_thread_limit(host: str, ports: range, thread_number: int):
     # scan the host with the ports with a thread limit
     # return the open ports
-    logger.info("Checkin if the host is up...")
-    if not ping(host):
+    logger.info(f"Checkin if {host} is up...")
+    if not ping(host) and port_scan(host, random.sample(range(1,1000), 1000)) == [] :
         logger.warning(f"{host} is down")
         return []
     logger.info(f"Checking if {host} filtered...")
