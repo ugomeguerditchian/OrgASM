@@ -4,14 +4,15 @@ import json
 import socket
 import threading
 from libs import custom_logger
+
 logger = custom_logger.logger
 
 
 def hacker_target_parser(domain):
-    #get all the subdomain of the domain from hackertarget
-    #the url is https://api.hackertarget.com/hostsearch/?q={domain}
+    # get all the subdomain of the domain from hackertarget
+    # the url is https://api.hackertarget.com/hostsearch/?q={domain}
     url = "https://api.hackertarget.com/hostsearch/?q=" + domain
-    try :
+    try:
         response = requests.get(url)
         """
         the response is in this form :
@@ -25,18 +26,18 @@ def hacker_target_parser(domain):
         dolibarr.benoit.fage.fr,82.66.13.124
         content.benoit.fage.fr,157.90.145.185
         """
-        #split the response in lines
+        # split the response in lines
         lines = response.text.split("\n")
-        #get all the subdomains
+        # get all the subdomains
         subdomains = []
         for line in lines:
             if line != "" and "*" not in line.split(",")[0]:
-                if line == "API count exceeded - Increase Quota with Membership" :
+                if line == "API count exceeded - Increase Quota with Membership":
                     raise Exception("API")
                 subdomains.append(line.split(",")[0])
-        #delete all the occurences in the list
+        # delete all the occurences in the list
         subdomains = rp.delete_occurences(subdomains)
-        
+
         return subdomains
     except Exception as e:
         if e.args[0] == "API":
@@ -45,17 +46,18 @@ def hacker_target_parser(domain):
             logger.error("Impossible to get subdomains from hackertarget")
         return []
 
+
 def crtsh_parser(domain):
-    #get all the subdomain of the domain from crtsh
-    url= f"https://crt.sh/?q={domain}&output=json"
-    #user agent firefox
+    # get all the subdomain of the domain from crtsh
+    url = f"https://crt.sh/?q={domain}&output=json"
+    # user agent firefox
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"
     }
-    try :
+    try:
         response = requests.get(url, headers=headers)
-        #response is a json format
-        #convert response.text in json
+        # response is a json format
+        # convert response.text in json
         json_data = json.loads(response.text)
         """
         Example of json_data from crtsh :
@@ -83,11 +85,11 @@ def crtsh_parser(domain):
             "serial_number": "030da3a68189369d6475a61ad5ec6618a11c"
         }]
         """
-        #get all the common_name and name_value
+        # get all the common_name and name_value
         subdomains = []
         for item in json_data:
             subdomains.append(item["common_name"])
-            #split name_value in lines
+            # split name_value in lines
             lines = item["name_value"].split("\n")
             for line in lines:
                 if line != "" and "*" not in line:
@@ -97,14 +99,18 @@ def crtsh_parser(domain):
     except Exception as e:
         logger.error("Impossible to get subdomains from crtsh")
         return []
+
+
 def alienvault_parser(domain):
-    #get all the subdomain of the domain from alienvault
-    #url https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns
-    url = "https://otx.alienvault.com/api/v1/indicators/domain/" + domain + "/passive_dns"
-    try :
+    # get all the subdomain of the domain from alienvault
+    # url https://otx.alienvault.com/api/v1/indicators/domain/{domain}/passive_dns
+    url = (
+        "https://otx.alienvault.com/api/v1/indicators/domain/" + domain + "/passive_dns"
+    )
+    try:
         response = requests.get(url)
-        #response is a json format
-        #convert response.text in json
+        # response is a json format
+        # convert response.text in json
         json_data = json.loads(response.text)
         """
         Example of json_data from alienvault
@@ -135,15 +141,15 @@ def alienvault_parser(domain):
                     "asn": "AS12322 free sas"
                 }
         """
-        #get all the hostname
+        # get all the hostname
         subdomains = []
         for i in json_data["passive_dns"]:
-            try :
-                if "*" not in subdomains.append(i["hostname"]) :
+            try:
+                if "*" not in subdomains.append(i["hostname"]):
                     subdomains.append(i["hostname"])
             except:
                 pass
-        #delete all the occurences in the list
+        # delete all the occurences in the list
         subdomains = rp.delete_occurences(subdomains)
         return subdomains
     except Exception as e:
@@ -152,49 +158,54 @@ def alienvault_parser(domain):
 
 
 def from_wordlist(domain, wordlist_chunks):
-    #wordlist is Subdomain.txt
-    #open the file
+    # wordlist is Subdomain.txt
+    # open the file
 
-    #test all the subdomains like {subdomain}.{domain}
+    # test all the subdomains like {subdomain}.{domain}
     subdomains = []
     for line in wordlist_chunks:
         if "*" in line:
             pass
-        #delete the \n
+        # delete the \n
         line = line.replace("\r", "")
-        #loaading percentage
-        print(f"{domain}\tWordlist testing : {str(round(wordlist_chunks.index(line) / len(wordlist_chunks) * 100, 2))}% ", end="\r")
+        # loaading percentage
+        print(
+            f"{domain}\tWordlist testing : {str(round(wordlist_chunks.index(line) / len(wordlist_chunks) * 100, 2))}% ",
+            end="\r",
+        )
         request_to_test = line.strip() + "." + domain
         try:
-            #try to connect to the subdomain
-            #detect if there is a redirection
-            #if there is a redirection, check if the redirection is the same as the actual subdomain tested
-            #if the redirection is the same as the actual subdomain tested, add the subdomain to the list
-            #if the redirection is not the same as the actual subdomain tested, don't add the subdomain to the list
-            #if there is no redirection, add the subdomain to the list
+            # try to connect to the subdomain
+            # detect if there is a redirection
+            # if there is a redirection, check if the redirection is the same as the actual subdomain tested
+            # if the redirection is the same as the actual subdomain tested, add the subdomain to the list
+            # if the redirection is not the same as the actual subdomain tested, don't add the subdomain to the list
+            # if there is no redirection, add the subdomain to the list
             socket.gethostbyname(request_to_test)
-            #if the connection is successful, add the subdomain to the list
+            # if the connection is successful, add the subdomain to the list
             subdomains.append(request_to_test)
         except:
             pass
     return subdomains
+
+
 def divide_chunks(l, n):
-     
     # looping till length l
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
+
 
 def from_wordlist_thread(domain, thread_number, wordlist):
     with open(wordlist, "r") as file:
-        #read all the lines
+        # read all the lines
         lines = file.readlines()
-    #delete all \n
+    # delete all \n
     lines = [line.replace("\n", "") for line in lines]
-    ranges= list(divide_chunks(lines, len(lines) // thread_number))
+    ranges = list(divide_chunks(lines, len(lines) // thread_number))
     subdomains = []
     threads = []
     for i in ranges:
-        t = threading.Thread(target= lambda: subdomains.append(from_wordlist(domain, i)))
+        t = threading.Thread(target=lambda: subdomains.append(from_wordlist(domain, i)))
         threads.append(t)
         t.start()
     for i in threads:
