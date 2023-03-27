@@ -342,6 +342,10 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
         if mode == "A":
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
                 hosts_list.append("https://" + subdomain)
+        #parse all port and detect whose are web
+        for port in ip_dict[ip]["ports"]:
+            if "tech" in ip_dict[ip]["ports"][port]:
+                hosts_list.append("https://" + ip + ":" + port)
 
     nuclei_results = nuclei_scan(hosts_list, domain, vulnconf)
     logger.info("Nuclei scan finished")
