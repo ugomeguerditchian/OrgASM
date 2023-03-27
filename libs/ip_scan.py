@@ -35,7 +35,15 @@ def ping(ip: str) -> bool:
     if result:
         return True
     else:
-        return False
+        #try to access to port 80
+        try:
+            s = socket(AF_INET, SOCK_STREAM)
+            s.settimeout(3)
+            s.connect((ip, 80))
+            s.close()
+            return True
+        except:
+            return False
 
 
 def get_ip(domain):
