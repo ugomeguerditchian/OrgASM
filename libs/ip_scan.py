@@ -91,9 +91,11 @@ def test_port_number(host, port):
             return False
 
 
-def port_scan(host, ports):
+def port_scan(host, ports, mode=1):
+    
     open_ports = []
-    logger.info(f"Scanning {host}...")
+    if mode == 1:
+        logger.info(f"Scanning {host}...")
     # create the thread pool
     with ThreadPoolExecutor(len(ports)) as executor:
         # dispatch all tasks
@@ -102,14 +104,15 @@ def port_scan(host, ports):
         for port, is_open in zip(ports, results):
             if is_open:
                 open_ports.append(port)
-    pprint(open_ports)
+    if mode == 1:
+        pprint(open_ports)
     return open_ports
 
 
 def check_filtered(host):
     target_ports = range(30000, 65535)
     start = time.time()
-    port_scan(host, random.sample(target_ports, 1000))
+    port_scan(host, random.sample(target_ports, 1000), mode=0)
     end = time.time()
     if end - start < 1.7:
         return True
@@ -119,7 +122,7 @@ def port_scan_with_thread_limit(host: str, ports: range, thread_number: int):
     # scan the host with the ports with a thread limit
     # return the open ports
     logger.info(f"Checkin if {host} is up...")
-    if not ping(host) and port_scan(host, random.sample(range(1,1000), 1000)) == [] :
+    if not ping(host) and port_scan(host, random.sample(range(1,1000), 800), mode=0) == [] :
         logger.warning(f"{host} is down")
         return []
     logger.info(f"Checking if {host} filtered...")
