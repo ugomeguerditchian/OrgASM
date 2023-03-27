@@ -92,7 +92,6 @@ def test_port_number(host, port):
 
 
 def port_scan(host, ports, mode=1):
-    
     open_ports = []
     if mode == 1:
         logger.info(f"Scanning {host}...")
@@ -122,7 +121,10 @@ def port_scan_with_thread_limit(host: str, ports: range, thread_number: int):
     # scan the host with the ports with a thread limit
     # return the open ports
     logger.info(f"Checkin if {host} is up...")
-    if not ping(host) and port_scan(host, random.sample(range(1,1000), 800), mode=0) == [] :
+    if (
+        not ping(host)
+        and port_scan(host, random.sample(range(1, 1000), 800), mode=0) == []
+    ):
         logger.warning(f"{host} is down")
         return []
     logger.info(f"Checking if {host} filtered...")
@@ -342,10 +344,10 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
         if mode == "A":
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
                 hosts_list.append("https://" + subdomain)
-        #parse all port and detect whose are web
+        # parse all port and detect whose are web
         for port in ip_dict[ip]["ports"]:
             if "tech" in ip_dict[ip]["ports"][port]:
-                hosts_list.append("https://" + ip + ":" + port)
+                hosts_list.append("https://" + ip + ":" + str(port))
 
     nuclei_results = nuclei_scan(hosts_list, domain, vulnconf)
     logger.info("Nuclei scan finished")
