@@ -308,7 +308,7 @@ def nuclei_scan(hosts: list, domain: str, vulnconf: str) -> dict:
         )
     else:
         os.system(
-            f"nuclei -l nuclei/{domain}/hosts.txt -json -o nuclei/{domain}/results_{actual_time}.json"
+            f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -json -o nuclei/{domain}/results_{actual_time}.json"
         )
     # read the output
     with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
@@ -349,7 +349,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
         # parse all port and detect whose are web
         for port in ip_dict[ip]["ports"]:
             if "tech" in ip_dict[ip]["ports"][port]:
-                hosts_list.append("https://" + ip + ":" + str(port))
+                hosts_list.append(ip + ":" + str(port))
 
     nuclei_results = nuclei_scan(hosts_list, domain, vulnconf)
     logger.info("Nuclei scan finished")
