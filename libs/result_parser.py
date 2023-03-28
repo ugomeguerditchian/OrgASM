@@ -117,7 +117,7 @@ def dynamic_save(all_results: dict, domain: str, mode: str):
                         position = i
             with open(f"exports/{domain}/dynamic_sub_save.txt", "a") as file:
                 for sub in down:
-                    file.write(str(sub), "\r")
+                    file.write(str(sub)+"\r")
         else:
             logger.error("No subdomains found, exiting...")
             exit(1)
