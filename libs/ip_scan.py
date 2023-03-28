@@ -115,6 +115,8 @@ def check_filtered(host):
     end = time.time()
     if end - start < 1.7:
         return True
+    else:
+        return False
 
 
 def port_scan_with_thread_limit(host: str, ports: range, thread_number: int):
@@ -357,7 +359,11 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
         for ip in ip_dict:
             ip_dict[ip]["vulns"] = []
             for result in nuclei_results:
-                if result["host"] == ip or result["host"] == "https://" + ip:
+                if (
+                    result["host"] == ip
+                    or result["host"] == "https://" + ip
+                    and result not in ip_dict[ip]["vulns"]
+                ):
                     ip_dict[ip]["vulns"].append(result)
         # add vulns key to subdomains and add the nuclei results, split the 'https://' from the subdomain
 
@@ -370,7 +376,10 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
                         result["host"] == "https://" + subdomain
                         or result["host"] == subdomain
                         or result["host"] == "http://" + subdomain
+                        and result not in ip_dict[ip]["subdomains"]["vulns"][subdomain]
                     ):
+                        # if result already in the list, don't add it
+
                         ip_dict[ip]["subdomains"]["vulns"][subdomain].append(result)
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_with_redirect"]:
                 ip_dict[ip]["subdomains"]["vulns"][subdomain] = []
@@ -379,6 +388,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
                         result["host"] == "https://" + subdomain
                         or result["host"] == subdomain
                         or result["host"] == "http://" + subdomain
+                        and result not in ip_dict[ip]["subdomains"]["vulns"][subdomain]
                     ):
                         ip_dict[ip]["subdomains"]["vulns"][subdomain].append(result)
             for subdomain in ip_dict[ip]["subdomains"]["subdomain_withoutdomain"]:
@@ -388,6 +398,7 @@ def run_parse_nuclei(ip_dict: dict, domain: str, mode: str, vulnconf: str) -> di
                         result["host"] == "https://" + subdomain
                         or result["host"] == subdomain
                         or result["host"] == "http://" + subdomain
+                        and result not in ip_dict[ip]["subdomains"]["vulns"][subdomain]
                     ):
                         ip_dict[ip]["subdomains"]["vulns"][subdomain].append(result)
         logger.info("Nuclei results parsed")
