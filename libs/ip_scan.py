@@ -300,6 +300,11 @@ def nuclei_scan(hosts: list, domain: str, vulnconf: str) -> dict:
     )
 
     # run nuclei and save the results in a json file
+    # countdown to 5 seconds
+    logger.info("Starting nuclei scan in 5 seconds")
+    for i in range(5, 0, -1):
+        logger.info(f"{i}...")
+        time.sleep(1)
     actual_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if vulnconf != "":
         logger.info("Running nuclei with config file")
@@ -308,7 +313,7 @@ def nuclei_scan(hosts: list, domain: str, vulnconf: str) -> dict:
         )
     else:
         os.system(
-            f"nuclei -l nuclei/{domain}/hosts.txt -json -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -o nuclei/{domain}/results_{actual_time}.json"
+            f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -jsonl -o nuclei/{domain}/results_{actual_time}.json"
         )
     # read the output
     with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
