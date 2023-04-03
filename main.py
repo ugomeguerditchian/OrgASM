@@ -641,10 +641,16 @@ def menu():
     path = os.sep.join(
         [os.getcwd(), f"exports/{domain}/html_report_{domain}_{date}.html"]
     )
-    if os.name == "nt":
-        os.startfile(path)
-    if sys.platform.startswith("linux"):
-        os.system("xdg-open " + path)
+    try:
+        if os.name == "nt":
+            os.startfile(path)
+        if sys.platform.startswith("linux"):
+            os.system("xdg-open " + path)
+        if sys.platform.startswith("darwin"):
+            os.system("open " + path)
+    except Exception as e:
+        logger.error(e)
+        logger.error("Can't open the result in your browser")
     logger.info("Exiting...")
 
 

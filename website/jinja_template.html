@@ -135,77 +135,46 @@
                  aria-labelledby="nav-sub-tab"
                  tabindex="0">
                 <div class="d-flex gap-2 flex-column">
+                    <h2>Subdomains</h2>
+                        <div style="overflow-x:scroll">
+                            <table id="myTableSubs" class="display nowrap" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Subdomain</th>
+                                        <th>IP</th>
+                                        <th>Category</th>
+                                        <th>Technologies</th>
+                                        <th>Headers</th>
+                                    </tr>
+                                </thead>
+                        </div>
+            </div>
+                <tbody>
                     {% for ip in data %}
                     {% if ip != "dead_subdomains"  and ip !="dns_exist"%}
                     {% for subs_type, value in data[ip]["subdomains"].items() %}
                     {% if subs_type != "web_techno" and subs_type != "vulns" and
                     data[ip]["subdomains"][subs_type]|length >
                     0%}
-                    <div class="accordion"
-                         id="subsaccordion{{ subs_type }}{{ip | replace('.', '-')}}">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header"
-                                id="headingOne{{ subs_type }}{{ip | replace('.', '-')}}">
-                                {{ buttonAccordion(ip ~ " - " ~ subs_type, [value|length], "collapseOne" ~ subs_type ~ ip | replace('.', '-')) }}
-                            </h2>
-                            <div id="collapseOne{{ subs_type }}{{ip | replace('.', '-')}}"
-                                 class="accordion-collapse collapse"
-                                 aria-labelledby="headingOne{{ subs_type }}{{ip | replace('.', '-')}}"
-                                 data-bs-parent="#subsaccordion{{ subs_type }}{{ip | replace('.', '-')}}">
-                                <div class="accordion-body d-flex gap-2 flex-column">
-                                    {% for sub in value %}
-                                    {% if sub in data[ip]["subdomains"]["web_techno"] and "tech" in
-                                    data[ip]["subdomains"]["web_techno"][sub] and
-                                    data[ip]["subdomains"]["web_techno"][sub]["tech"]|length > 0 and "headers" in
-                                    data[ip]["subdomains"]["web_techno"][sub] and
-                                    data[ip]["subdomains"]["web_techno"][sub]["headers"]|length > 0 %}
-                                    <div class="accordion"
-                                         id="techaccordion{{ sub }}">
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header"
-                                                id="headingOne{{ sub }}">
-                                                <button class="accordion-button"
-                                                        type="button"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseOne{{ sub }}"
-                                                        aria-expanded="false"
-                                                        aria-controls="collapseOne{{ sub }}">
-                                                    {{sub}}
-                                                </button>
-                                            </h2>
-                                            <div id="collapseOne{{ sub }}"
-                                                 class="accordion-collapse collapse"
-                                                 aria-labelledby="headingOne{{ sub }}"
-                                                 data-bs-parent="#techaccordion{{ sub }}">
-                                                <div class="accordion-body">
-                                                    {{tableCustom("Technologies",["name", "version"], data[ip]["subdomains"]["web_techno"][sub]["tech"])}}
-                                                    {{tableCustom("Headers", ["name", "value"],data[ip]["subdomains"]["web_techno"][sub]["headers"])}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% else %}
-                                    <div class="accordion">
-                                        <div class="accordion-item">
-                                            <div class="accordion-header">
-                                                <button disabled
-                                                        class="btn accordion-button collapsed"
-                                                        type="button"
-                                                        data-bs-toggle="collapse"
-                                                        aria-expanded="false">
-                                                    <a>{{sub}}</a>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                            {% for sub in data[ip]["subdomains"][subs_type] %}
+                            <tr>
+                                <td>{{sub}}</td>
+                                <td>{{ip}}</td>
+                                <td>{{subs_type}}</td> 
+                                <td>{% if sub in data[ip]["subdomains"]["web_techno"] %}{{data[ip]["subdomains"]["web_techno"][sub]["tech"]}}{% endif %}</td>
+                                <td>{% if sub in data[ip]["subdomains"]["web_techno"] %}{{data[ip]["subdomains"]["web_techno"][sub]["headers"]}}{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                    
                     {% endif %}
                     {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+                    {% for ip in data %}
+                    {% if ip != "dead_subdomains"  and ip !="dns_exist"%}
                     {% elif ip=="dead_subdomains" %}
                     <div class="accordion"
                          id="Deadsaccordion">

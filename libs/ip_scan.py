@@ -308,7 +308,7 @@ def nuclei_scan(hosts: list, domain: str, vulnconf: str) -> dict:
         )
     else:
         os.system(
-            f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -json -o nuclei/{domain}/results_{actual_time}.json"
+            f"nuclei -l nuclei/{domain}/hosts.txt -json -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -o nuclei/{domain}/results_{actual_time}.json"
         )
     # read the output
     with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
