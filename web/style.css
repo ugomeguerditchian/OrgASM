@@ -1,0 +1,36 @@
+th, td { 
+    white-space: nowrap;
+}
+
+div.dataTables_wrapper {
+    width: 900px;
+    margin: 0 auto;
+    float: left;
+}
+
+#logo {
+    font-size: 0.5rem;
+    font-family: monospace;
+    text-decoration: none;
+}
+
+.tab-pane h2 {
+    padding: 2rem 0;
+}
+
+body {
+    font-size: 15px;
+    background-color: blue; 
+}
+
+@media all and (max-width: 900px) and (min-width: 200px) {
+    div.dataTables_wrapper {
+        width: 100%;
+        margin: 0 auto;
+        float: none;
+    }
+    body{
+        font-size: calc(1.375rem + 1.5vw)!important;
+        background-color: red;
+    }
+}

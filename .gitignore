@@ -1,6 +1,11 @@
-*__pycache__*
-results.txt
-exports*
-nuclei*
-.vscode
-sandbox*
+venv
+
+*/__pycache__
+.vscode/
+*__pycache__/
+lib/__pycache__/
+*sandbox*
+exports/
+nuclei/
+screenshots/
+OrgASM/

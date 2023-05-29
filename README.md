@@ -1,155 +1,127 @@
+```
+
+    ███████                         █████████    █████████  ██████   ██████
+  ███░░░░░███                      ███░░░░░███  ███░░░░░███░░██████ ██████ 
+ ███     ░░███ ████████   ███████ ░███    ░███ ░███    ░░░  ░███░█████░███ 
+░███      ░███░░███░░███ ███░░███ ░███████████ ░░█████████  ░███░░███ ░███ 
+░███      ░███ ░███ ░░░ ░███ ░███ ░███░░░░░███  ░░░░░░░░███ ░███ ░░░  ░███ 
+░░███     ███  ░███     ░███ ░███ ░███    ░███  ███    ░███ ░███      ░███ 
+ ░░░███████░   █████    ░░███████ █████   █████░░█████████  █████     █████
+   ░░░░░░░    ░░░░░      ░░░░░███░░░░░   ░░░░░  ░░░░░░░░░  ░░░░░     ░░░░░ 
+                         ███ ░███                                          
+                        ░░██████        V3.0.0                            
+                         ░░░░░░                                            
+                                                     
+```
+# Organized Attack Surface Mapper
+
+
+
+A tool for mapping the attack surface of any type of target, it can find **subdomains, IPs and ports, services** and then scan them with other tools like **nuclei**, gobuster, wafwoof, etc....
+
+It can also **pivot** to other related FQDNs and IPs. Last but not least, it features a **web export** with all the information found, and a ***modularity that makes it easy to add data from your tools***!
+
+All is organized by a **configuration.yaml** file, here you can set all the settings of the initial scan and others tools.
+
 <p align="center"> <img src="readme/Banner.png"></p>
 
-[![PyPI - Python](https://img.shields.io/badge/python-v3%2E8-181717?logo=python&style=for-the-badge)](https://github.com/ugomeguerditchian/OrgASM)
-![Lines of code](https://img.shields.io/tokei/lines/github.com/ugomeguerditchian/OrgASM?style=for-the-badge)
 
-<h2 align="center">OrgASM</h2>
+## Features 👀
+* Discover Attack Surface
+* Find subdomains related to domains
+* Easy modularity on API to find new subs
+* Easy configuration file
+* Find FQDN from an IP and find all associated subs
+* Retreive all certificates of the IP and FQDNs founds and detect SAN
+* Can pivot to others related FQDNs
+* Can limit to a scope (regex(s), list, file)
+* Pass traffic through proxies automatically fetched from public lists (you can add your own)
+* Can launch others tools after initial scan completed
+* Can resume a scan to the last tool used
+* Modular web export for easy adding
 
-A tool for Organized ASM (Attack Surface Monitoring).
-
-OrgASM can detect subdomains, detect all ip related to them, scan all open ports and detect services and vulnerabilities.
-
-With the power of multi-threading it can be as fast as you want (and has you can) 🚀
-
-In the very next future it will be shodan and censys friendly 🙌
-
-We will also soon released the dorking compatibility and web parser 🥸
-
-## Features
-- Can scan a domain, a network or a list of IPs
-- Can be limited to a given scope (domain or subdomains given in a file)
-- Obtaining results via [Alienvault](https://otx.alienvault.com/), [Hackertarget](https://hackertarget.com/) and [crt.sh](https://crt.sh/)
-- Web, JSON and TXT export
-- Possibility to add a list of already knows subdomains
-- Subdomain Bruteforcing
-- Vulnerability detection with [nuclei](https://github.com/projectdiscovery/nuclei)
-- Recursive scan
-- IP Sorting and scanning (Ports and services)
-- OrgASM can detect services using Wappalyzer sources ! Thanks to [webtech](https://github.com/ShielderSec/webtech)
-- Harvesting of headers
-- Filtering real subdomains by access them (and detect potential redirections to others subdomains).
-- You can choose if you want only OSINT mode (API request on third party websites), Bruteforce and IPs scanning
-
-## Installation
-
-Install **OrgASM** with pip
-(:warning: *Python 3.8 >= Needed*)
-
-```
-  git clone https://github.com/ugomeguerditchian/OrgASM
-  cd OrgASM
-  pip install -r requirements.txt
-  usage: main.py [-h] [-d DOMAIN] [-ip IP] [-net NETWORK] [-m MODE] [-sF SUBFILE] [-ipF IPFILE] [-R RECURSIVE] [-w WORDLIST] [-wT WORDLISTTHREADS] [-iS IPSCANTYPE] [-iT IPTHREADS] [-sT SUBDOMAINSTHREADS]
-               [-cP CHECKPORTSTHREADS] [-dT DETECTTECHNO] [-vuln] [-vulnconf VULNCONFIG] [-limit]
-
-  options:
-    -h, --help            show this help message and exit
-    -d DOMAIN, --domain DOMAIN
-                          Domain to scan
-    -ip IP, --ip IP       IP to scan
-    -net NETWORK, --network NETWORK
-                          Network to scan, don't forget the CIDR (ex: 192.168.1.0/24)
-    -m MODE, --mode MODE  Mode to use, O for OSINT (API request), B for bruteforce, S for IP scan (default OBS)
-    -sF SUBFILE, --subfile SUBFILE
-                          Path to file with subdomains, one per line
-    -ipF IPFILE, --ipfile IPFILE
-                          Path to file with IPs, one per line
-    -R RECURSIVE, --recursive RECURSIVE
-                          Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
-    -w WORDLIST, --wordlist WORDLIST
-                          Wordlist to use (small, medium(default), big)
-    -wT WORDLISTTHREADS, --wordlistThreads WORDLISTTHREADS
-                          Number of threads to use for Wordlist(default 500)
-    -iS IPSCANTYPE, --IPScanType IPSCANTYPE
-                          Choose what IPs to scan (W: only subdomains IP containing domain given, WR: only subdomains IP containtaining domain given but with a redirect, A: All subdomains detected
-    -iT IPTHREADS, --IPthreads IPTHREADS
-                          Number of threads to use for IP scan(default 2000)
-    -sT SUBDOMAINSTHREADS, --subdomainsThreads SUBDOMAINSTHREADS
-                          Number of threads to use for check real subdomains(default 500)
-    -cP CHECKPORTSTHREADS, --checkPortsThreads CHECKPORTSTHREADS
-                          Check all ports of subdomains for all IP in IPScantype (-iS) and try to access them to check if it's a webport (default True) (deactivate with 0)
-    -dT DETECTTECHNO, --detectTechno DETECTTECHNO
-                          Detect techno used by subdomains (default True) (deactivate with False)
-    -vuln, --vulnScan     Scan subdomains using Nuclei, you need to have nuclei installed and in your PATH (default False)
-    -vulnconf VULNCONFIG, --vulnConfig VULNCONFIG
-                          Path to config file for nuclei (default is the default config)
-    -limit, --limit       Limit the scope of scan to the domain given or the subdomains given in the file (-sF) (default False)
+## Installation 💾
+**Need python3** 
+```bash
+git clone https://github.com/ugomeguerditchian/OrgASM
+cd OrgASM
+pip install -r requirements.txt
+python main.py -h
 ```
 
-> :memo: **Note:** help with `python main.py -h`
+## Implemented API for subs 🔭
+* Alienvault
+* Crt.sh
+* Hackertarget
+* Rapiddns
+* AnubisDB
+* Certspotter
 
-## Web Exports Exemple for the commands : python main.py -d domain.fr -vuln
+## Implemented tools 🔧
+* Ports scanner
+* Service detector
+* Wappalayzer for detected web ports and FQDNs
+* Nuclei scan
 
-Subdomains tab :
-![Web Export Subdomains tab](readme/subs.png)
+## Incoming tools 🔬
+* Gobuster
+* WafWoof
 
-IPs | Ports | Techno tab :
-![Web Export IPs | Ports | Techno tab](readme/Ip_ports_tech.png)
+## Common usage 📖 
+```
+usage: main.py [-h] [-d DOMAIN] [-ip IP] [-net NETWORK] [-R RECURSIVE] [--resume RESUME]
 
-Vulnerabilities tab :
-![Web Export Vulnerabilities tab](readme/vulns.png)
+options:
+  -h, --help            show this help message and exit
+  -d DOMAIN, --domain DOMAIN
+                        Domain to scan
+  -ip IP, --ip IP       IP to scan
+  -net NETWORK, --network NETWORK
+                        Network to scan, don't forget the CIDR (ex: 192.168.1.0/24)
+  -R RECURSIVE, --recursive RECURSIVE
+                        Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
+  --resume RESUME       Resume a scan from the json export and to a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You   
+                        can also use --resume exports/mydomain/date.json:export to just generate the html report
 
-## Usecases
-
-- Map surface attack from a domain :
-```
-python main.py -d domain.fr
-```
-- Scan an IP :
-```
-python main.py -ip 1.1.1.1
-```
-- Scan a network :
-```
-python main.py -net 192.168.1.0/24
-```
-- Scan multiple IPs :
-```
-python main.py -ipF /path/to/ips.txt
-```
-
-
-- Map surface attack from a domain and scan for vulnerabilities :
-```
-python main.py -d domain.fr -vuln
-```
-- Map surface attack from a domain and scan for vulnerabilities with a custom config file :
-```
-python main.py -d domain.fr -vuln -vulnconf /path/to/config.yaml
-```
-- Map surface attack from a domain and scan for vulnerabilities and limit the scope to the domain given :
-```
-python main.py -d domain.fr -vuln -limit
-```
-- Map surface attack from a domain and scan for vulnerabilities and limit the scope to the subdomains given in the file (-sF) :
-```
-python main.py -d domain.fr -vuln -sF /path/to/subdomains.txt -limit
 ```
 
+## Roadmap 🏎️
+**Next week :**
+* Option to re do the intial scan after a tool
+* More api
+* During intial scan handling of API for IP informations
+* Add res.metadata to store statistic of the scan
+* Possibility to add your own jinja template for an html object inside the mapper of the tool
+
+### Refer to Wiki for this :
+* Add new API for subs finding
+* Add new tools
+* Add new tools data to html report
 
 
-## Roadmap
+## Contributing ❤️
+We would love for you to contribute to OrgASM and help make it even better than it is today! 
 
-- [X] Service scanning amelioration
-- [x] Added Web GUI !
-- [X] Add IP scan
-- [X] Add Network scan
-- [X] Added scope limitation
-- [ ] Add DNS transfer zone test
-- [X] Recursive scan for subdomains bruteforcing
-- [ ] Selection of others API websites like shodan, censys etc... (need to have an api key)
-- [X] Filtering real subdomains by access them (and detect potential redirections to others subdomains)
-- [ ] Dorking test
-- [ ] Export map options
-- [X] Possibility to add a list of already knows subdomains
-- [X] Choice for doing only API scan, Bruteforce scan or IP scan (or all)
-- [ ] Config file (yaml)
-- [X] Choice for doing IP scan only on target associated with main domain
-- [X] Add vulnerability scan
-## Authors
+You can easily add new API for subs, new tools to add with their data parser for the html report.
 
-- [@ugomeguerditchian](https://github.com/ugomeguerditchian)
+Here are the guidelines we'd like you to follow:
 
-## Contributors
+### **Issues**
+If you find a bug in the project or want to propose a new feature, please submit an issue on our [GitHub Issues page](https://github.com/ugomeguerditchian/OrgASM/issues).
 
-- [@MrStaf](https://github.com/MrStaf)
+### **Pull Requests**
+If you'd like to contribute code to this project you can do so through GitHub by forking the repository and sending a pull request. Here's how:
+
+1. Fork the project via GitHub interface
+2. Clone your fork to your machine.
+3. Create a new branch with a meaningful name.
+4. Make your changes and commit them to your branch.
+5. Push your branch to your fork on GitHub.
+6. Create a new pull request via GitHub interface, pointing to your fork and branch.
+7. Fill in the required information and submit the pull request.
+
+### **Coding Standards**
+Please follow the coding conventions already established in the project. Consistency is key!
+
+### **Code of Conduct**
+In the interest of fostering an open and welcoming environment, we ask that our contributors adhere to a code of conduct which promotes respect and inclusivity. Harassment of any kind will not be tolerated.
