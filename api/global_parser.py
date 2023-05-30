@@ -38,11 +38,9 @@ def main(domain: str, config: configuration):
                     warn = ""
                     logger.info(f"[*] No subdomains of {domain} found from {os_file}")
                 else:
-                    #remove duplicates
+                    # remove duplicates
                     results = list(dict.fromkeys(results))
-                    logger.info(
-                        f"[*] {len(results)} subdomains of {domain} found"
-                    )
+                    logger.info(f"[*] {len(results)} subdomains of {domain} found")
             except Exception as e:
                 logger.error(f"Impossible to get subdomains of {domain} from {os_file}")
                 continue

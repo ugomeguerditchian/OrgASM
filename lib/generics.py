@@ -35,7 +35,9 @@ def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: int = 0):
+def fqdn_scanner(
+    main_fqdn: str, config: configuration, res: result, recursive: int = 0
+):
     logger.info("[*] Scanning fqdn {}".format(main_fqdn))
     main_domain = domain(main_fqdn, config)
     if main_domain.ip == "Dead":
@@ -100,7 +102,10 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
                             sub_domain_future = executor.submit(domain, fqdn, config)
                             futures_domain_recursive[fqdn] = sub_domain_future
                             futures_get_subs.append(
-                                executor.submit(sub_domain_future.result().get_subs, config.ip_trough_proxy)
+                                executor.submit(
+                                    sub_domain_future.result().get_subs,
+                                    config.ip_trough_proxy,
+                                )
                             )
                 logger.info(
                     "[*] Waiting for {} threads to finish to getting subs".format(
@@ -115,7 +120,11 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
                 # remove duplicates
                 subs = list(dict.fromkeys(subs))
                 for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
-                    if fqdn == "localhost" or config.is_there_scope() or fqdn not in futures_domain_recursive and not futures_scope[fqdn] :
+                    if (
+                        fqdn == "localhost"
+                        or config.is_there_scope()
+                        or fqdn not in futures_domain_recursive
+                    ):
                         continue
                     sub_domain = futures_domain_recursive[fqdn].result()
                     if sub_domain.ip == "Dead":
@@ -130,8 +139,6 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
 
             logger.info("[*] Recursive {} finished".format(i + 1))
             res.status()
-
-
 
 
 def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):

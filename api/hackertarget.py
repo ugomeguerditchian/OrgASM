@@ -9,13 +9,8 @@ def main(domain, handler: handler, key: str):
     # get all the subdomain of the domain from hackertarget
     # the url is https://api.hackertarget.com/hostsearch/?q={domain}
     # key is the api key
-    if key :
-        url = (
-            "https://api.hackertarget.com/hostsearch/?q="
-            + domain
-            + "&apikey="
-            + key
-        )
+    if key:
+        url = "https://api.hackertarget.com/hostsearch/?q=" + domain + "&apikey=" + key
     else:
         url = "https://api.hackertarget.com/hostsearch/?q=" + domain
     try:

@@ -101,7 +101,9 @@ class handler:
         while True:
             if not self.there_is_proxy():
                 try:
-                    data = http.request("GET", url, headers=headers, timeout=3.0, redirect=redirect)
+                    data = http.request(
+                        "GET", url, headers=headers, timeout=3.0, redirect=redirect
+                    )
                 except:
                     data = None
                 return data
@@ -131,11 +133,16 @@ class handler:
                             )
                             try:
                                 # don't use proxy
-                                data = http.request("GET", url, headers=headers, timeout=3.0, redirect=redirect)
+                                data = http.request(
+                                    "GET",
+                                    url,
+                                    headers=headers,
+                                    timeout=3.0,
+                                    redirect=redirect,
+                                )
                             except:
                                 data = None
                             return data
-
 
     def connect(self, ip: str, port: int):
         """Connect to the port using a random socks proxy"""

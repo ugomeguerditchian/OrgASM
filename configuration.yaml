@@ -1,5 +1,5 @@
 Proxy :
-    activate: False
+    activate: True
     file: null #path to file, one proxy per line
     links:
         https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt : "http"
