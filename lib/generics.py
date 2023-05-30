@@ -48,13 +48,15 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
     subs = list(dict.fromkeys(subs))
     futures_scope = {}
     if config.is_there_scope():
-        with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
-            for fqdn in subs:
-                futures_scope[fqdn] = executor.submit(
-                    config.is_in_scope, fqdn, mode="FQDNs"
-                )
-        for fqdn in subs:
-            futures_scope[fqdn] = futures_scope[fqdn].result()
+        with tqdm(total=len(subs), desc="Scoping subdomains", ncols=100) as progress:
+            with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
+                for fqdn in subs:
+                    futures_scope[fqdn] = executor.submit(
+                        config.is_in_scope, fqdn, mode="FQDNs"
+                    )
+                for fqdn in subs:
+                    futures_scope[fqdn] = futures_scope[fqdn].result()
+                    progress.update()
 
     with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
         futures_domain = {fqdn: executor.submit(domain, fqdn, config) for fqdn in subs}
@@ -82,7 +84,7 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
             with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
                 futures_get_subs = []
                 futures_domain_recursive = {}
-                for ip in res.result:
+                for ip in tqdm(res.result, desc=f"Scanning level {i+1}", ncols=100):
                     if config.is_there_scope() and not config.is_in_scope(
                         str(ip.ip), mode="IPs"
                     ):
@@ -113,7 +115,7 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
                 # remove duplicates
                 subs = list(dict.fromkeys(subs))
                 for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
-                    if fqdn == "localhost" or config.is_there_scope() and not futures_scope[fqdn] or fqdn not in futures_domain_recursive:
+                    if fqdn == "localhost" or config.is_there_scope() or fqdn not in futures_domain_recursive and not futures_scope[fqdn] :
                         continue
                     sub_domain = futures_domain_recursive[fqdn].result()
                     if sub_domain.ip == "Dead":
@@ -128,6 +130,7 @@ def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: 
 
             logger.info("[*] Recursive {} finished".format(i + 1))
             res.status()
+
 
 
 

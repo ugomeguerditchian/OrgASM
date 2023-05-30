@@ -58,7 +58,7 @@ API :
 SCOPE :
     FQDNs :
         file: False # path to file, one ip or fqdn per line
-        regex: ["tesla.com", "ts.la"] # regex to match example : ["example.com", "example.org", "^.*\.example\.com$"]
+        regex: False # regex to match example : ["example.com", "example.org", "^.*\.example\.com$"]
         list: False # list of ip or fqdn
     IPs :
         file: False # path to file, one ip or fqdn per line
