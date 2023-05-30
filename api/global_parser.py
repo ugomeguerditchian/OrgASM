@@ -34,13 +34,14 @@ def main(domain: str, config: configuration):
                 results += eval(
                     os_file.split(".")[0] + ".main(domain, config.handler, key)"
                 )
-                warn = "(may contain duplicates)"
                 if len(results) == 0:
                     warn = ""
                     logger.info(f"[*] No subdomains of {domain} found from {os_file}")
                 else:
+                    #remove duplicates
+                    results = list(dict.fromkeys(results))
                     logger.info(
-                        f"[*] {len(results)} subdomains of {domain} found {warn}"
+                        f"[*] {len(results)} subdomains of {domain} found"
                     )
             except Exception as e:
                 logger.error(f"Impossible to get subdomains of {domain} from {os_file}")

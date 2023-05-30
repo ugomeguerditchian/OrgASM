@@ -24,7 +24,6 @@ class domain:
 
     def get_subs(self, ip_trough_proxy: bool = False):
         # get all the subdomains of the domain
-        # get the subdomains from hackertarget
         changed = False
         if not self.trough_proxy and self.handler.there_is_proxy():
             logger.info("[*] Disabling proxy for requesting API")

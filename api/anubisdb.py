@@ -7,7 +7,7 @@ logger = custom_logger.logger
 
 
 def main(domain, handler: handler, key: str):
-    # get all the subdomain of the domain from hackertarget
+    # get all the subdomain of the domain from anubisd
     # the url is https://jonlu.ca/anubis/subdomains/{domain}
     """
     example :

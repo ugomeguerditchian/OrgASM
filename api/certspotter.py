@@ -7,7 +7,7 @@ logger = custom_logger.logger
 
 
 def main(domain, handler: handler, key: str):
-    # get all the subdomain of the domain from hackertarget
+    # get all the subdomain of the domain from certspotter
     # the url is https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names
     """
     example :

@@ -22,6 +22,7 @@ from lib.handler import handler
 from lib.result import result
 from lib.domain import domain
 from lib.configuration import configuration
+from tqdm import tqdm
 
 import requests
 import re
@@ -34,9 +35,7 @@ def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def fqdn_scanner(
-    main_fqdn: str, config: configuration, res: result, recursive: int = 0
-):
+def fqdn_scanner(main_fqdn: str, config: configuration, res: result, recursive: int = 0):
     logger.info("[*] Scanning fqdn {}".format(main_fqdn))
     main_domain = domain(main_fqdn, config)
     if main_domain.ip == "Dead":
@@ -45,6 +44,8 @@ def fqdn_scanner(
         this_ip = ip_lib.ip(main_domain.ip, config)
         res.add_fqdn(this_ip, main_domain.name)
     subs = main_domain.get_subs(config.ip_trough_proxy)
+    # remove duplicates
+    subs = list(dict.fromkeys(subs))
     futures_scope = {}
     if config.is_there_scope():
         with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
@@ -53,11 +54,15 @@ def fqdn_scanner(
                     config.is_in_scope, fqdn, mode="FQDNs"
                 )
         for fqdn in subs:
-            futures_scope[fqdn].result()
-    for fqdn in subs:
+            futures_scope[fqdn] = futures_scope[fqdn].result()
+
+    with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
+        futures_domain = {fqdn: executor.submit(domain, fqdn, config) for fqdn in subs}
+
+    for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
         if fqdn == "localhost" or config.is_there_scope() and not futures_scope[fqdn]:
             continue
-        sub_domain = domain(fqdn, config)
+        sub_domain = futures_domain[fqdn].result()
         if sub_domain.ip == "Dead":
             res.add_dead(sub_domain.name)
         else:
@@ -67,6 +72,7 @@ def fqdn_scanner(
                 else:
                     this_ip = res.get_ip_in_res(sub_domain.ip)
                 res.add_fqdn(this_ip, sub_domain.name)
+
     if recursive > 0:
         res.status()
         logger.info("[*] Recursive scan")
@@ -75,6 +81,7 @@ def fqdn_scanner(
         for i in range(recursive):
             with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
                 futures_get_subs = []
+                futures_domain_recursive = {}
                 for ip in res.result:
                     if config.is_there_scope() and not config.is_in_scope(
                         str(ip.ip), mode="IPs"
@@ -88,16 +95,11 @@ def fqdn_scanner(
                         ):
                             old_subs.append(fqdn)
                             logger.info(f"[*] Scanning subdomain {fqdn}")
-                            sub_domain = domain(fqdn, config)
-                            if sub_domain.ip == "Dead":
-                                res.add_dead(sub_domain.name)
-                            else:
-                                futures_get_subs.append(
-                                    executor.submit(
-                                        sub_domain.get_subs, config.ip_trough_proxy
-                                    )
-                                )
-
+                            sub_domain_future = executor.submit(domain, fqdn, config)
+                            futures_domain_recursive[fqdn] = sub_domain_future
+                            futures_get_subs.append(
+                                executor.submit(sub_domain_future.result().get_subs, config.ip_trough_proxy)
+                            )
                 logger.info(
                     "[*] Waiting for {} threads to finish to getting subs".format(
                         len(futures_get_subs)
@@ -108,10 +110,12 @@ def fqdn_scanner(
                 logger.info(
                     "[*] {} subs found (may contain duplicates)".format(len(subs))
                 )
-                for fqdn in subs:
-                    if fqdn == "localhost":
+                # remove duplicates
+                subs = list(dict.fromkeys(subs))
+                for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
+                    if fqdn == "localhost" or config.is_there_scope() and not futures_scope[fqdn] or fqdn not in futures_domain_recursive:
                         continue
-                    sub_domain = domain(fqdn, config)
+                    sub_domain = futures_domain_recursive[fqdn].result()
                     if sub_domain.ip == "Dead":
                         res.add_dead(sub_domain.name)
                     else:
@@ -124,6 +128,7 @@ def fqdn_scanner(
 
             logger.info("[*] Recursive {} finished".format(i + 1))
             res.status()
+
 
 
 def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):

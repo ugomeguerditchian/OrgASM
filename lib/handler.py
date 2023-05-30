@@ -91,12 +91,17 @@ class handler:
         """GET request, returns response object"""
         # launch a pool of threads, when one is done, return the response and kill the others
         pool = []
+        retry_strategy = urllib3.Retry(
+            total=2,
+            backoff_factor=1,
+            status_forcelist=[429],
+            respect_retry_after_header=False,
+        )
+        http = urllib3.PoolManager(retries=retry_strategy)
         while True:
             if not self.there_is_proxy():
                 try:
-                    data = urllib3.PoolManager().request(
-                        "GET", url, headers=headers, timeout=3.0, redirect=redirect
-                    )
+                    data = http.request("GET", url, headers=headers, timeout=3.0, redirect=redirect)
                 except:
                     data = None
                 return data
@@ -126,16 +131,11 @@ class handler:
                             )
                             try:
                                 # don't use proxy
-                                data = urllib3.PoolManager().request(
-                                    "GET",
-                                    url,
-                                    headers=headers,
-                                    timeout=3.0,
-                                    redirect=redirect,
-                                )
+                                data = http.request("GET", url, headers=headers, timeout=3.0, redirect=redirect)
                             except:
                                 data = None
                             return data
+
 
     def connect(self, ip: str, port: int):
         """Connect to the port using a random socks proxy"""
@@ -229,7 +229,7 @@ class handler:
                 return fqdn
         except Exception as e:
             socks.set_default_proxy()
-            logger.error(f"Impossible to get the fqdn of {hostname}")
+            logger.error(f"Impossible to get the fqdn of {hostname} from certificate")
             return None
 
     def get_certificate_san(self, hostname: str):
