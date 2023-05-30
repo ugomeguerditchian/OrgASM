@@ -94,9 +94,9 @@ options:
 * Possibility to add your own jinja template for an html object inside the mapper of the tool
 
 ### Refer to Wiki for this :
-* Add new API for subs finding
-* Add new tools
-* Add new tools data to html report
+* [Add new API for subs finding](https://github.com/ugomeguerditchian/OrgASM/wiki/Add-new-API-for-subs#getting-started)
+* [Add new tools](https://github.com/ugomeguerditchian/OrgASM/wiki/Add-new-tool-to-run-after-initial-scan#getting-started)
+* [Add new tools data to html report](https://github.com/ugomeguerditchian/OrgASM/wiki/Add-new-data-tool-to-the-html-export#getting-started)
 
 
 ## Contributing ❤️
