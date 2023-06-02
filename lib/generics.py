@@ -165,7 +165,13 @@ def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):
                 if fqdn:
                     fqdn = fqdn[0]
 
-        if fqdn and config.is_there_scope() and config.is_in_scope(fqdn, mode="FQDNs"):
+        if (
+            fqdn
+            and config.is_there_scope()
+            and config.is_in_scope(fqdn, mode="FQDNs")
+            or fqdn
+            and not config.is_there_scope()
+        ):
             res.add_fqdn(ip_obj, fqdn)
             if config.find_subs:
                 logger.info("[*] Finding subdomains")
