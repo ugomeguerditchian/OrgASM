@@ -162,8 +162,11 @@ def main(config: gen.configuration, res: result) -> dict:
         for ip in res.result:
             res.result[ip]["vulns"] = []
             for result_ in nuclei_results:
+                if result_["host"][-1] == ".":
+                    result_["host"] = result_["host"][:-1]
                 if (
                     result_["host"] == str(ip.ip)
+                    or result_["matched-at"] == str(ip.ip)
                     or result_["host"] == "https://" + str(ip.ip)
                     or result_["host"] == "http://" + str(ip.ip)
                     and result_ not in res.result[ip]["vulns"]
@@ -175,8 +178,11 @@ def main(config: gen.configuration, res: result) -> dict:
             for fqdn in res.result[ip]["fqdns"]:
                 res.result[ip]["fqdns"][fqdn]["vulns"] = []
                 for result_ in nuclei_results:
+                    if result_["host"][-1] == ".":
+                        result_["host"] = result_["host"][:-1]
                     if (
                         result_["host"] == fqdn
+                        or result_["matched-at"] == fqdn
                         or result_["host"] == "https://" + fqdn
                         or result_["host"] == "http://" + fqdn
                         and result_ not in res.result[ip]["fqdns"][fqdn]["vulns"]

@@ -5,7 +5,6 @@ from lib.result import result
 import lib.handler as handler
 import lib.generics as gen
 import lib.custom_logger as custom_logger
-import json
 
 logger = custom_logger.logger
 

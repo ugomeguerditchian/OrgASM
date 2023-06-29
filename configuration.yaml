@@ -81,7 +81,7 @@ TOOLS :
         workers: 2000
     nuclei:
         file: "nuclei"
-        headless_browser: True
+        headless_browser: false
         activate: true
         conf_file: null
 

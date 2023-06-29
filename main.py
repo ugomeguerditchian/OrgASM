@@ -12,7 +12,6 @@ import random
 
 from tools import orc
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 
 logger = cl.logger
 
