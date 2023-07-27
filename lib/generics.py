@@ -43,7 +43,11 @@ def fqdn_scanner(
     if main_domain.ip == "Dead":
         res.add_dead(main_domain.name)
     else:
-        this_ip = ip_lib.ip(main_domain.ip, config)
+        if not res.check_if_ip_in_res(main_domain.ip):
+            this_ip = ip_lib.ip(main_domain.ip, config)
+        else:
+            this_ip = res.get_ip_in_res(main_domain.ip)
+        
         res.add_fqdn(this_ip, main_domain.name)
     subs = main_domain.get_subs(config.ip_trough_proxy)
     # remove duplicates
