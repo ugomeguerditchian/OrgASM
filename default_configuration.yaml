@@ -1,7 +1,7 @@
 dev_mode: false
 version: "2.0.0"
 Proxy :
-    activate: false
+    activate: true
     file: null #path to file, one proxy per line
     links:
         https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt : "http"
@@ -76,7 +76,7 @@ TOOLS :
             workers: 3000
             wordlist_name: "n0kovo_subdomains_tiny.txt"
             resolver_name: "resolvers.txt"
-            recursive: true
+            recursive: false #if activated will try to get subs from subs founds in recursive scan WARNING : this can take a lot of time dependings on the number of subs found and wordlist size
     after_AS_scan:
         ports_scanner:
             file: "ports_scanner"

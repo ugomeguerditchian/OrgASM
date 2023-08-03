@@ -78,7 +78,7 @@ def fqdn_scanner(
             with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
                 futures_get_subs = []
                 futures_domain_recursive = {}
-                for ip in tqdm(res.result, desc=f"Scanning level {i+1}", ncols=100):
+                for ip in res.result :
                     if config.is_there_scope() and not config.is_in_scope(
                         str(ip.ip), mode="IPs"
                     ):
@@ -226,6 +226,7 @@ def check_update(config: configuration):
                         repo = git.Repo(".")
                         repo.remotes.origin.pull()
                         logger.info("Update successful")
+                        exit(1)
                     elif answer.lower() == "n":
                         pass
                     else:

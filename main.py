@@ -65,7 +65,7 @@ def main():
         required=False,
         default=False,
         type=str,
-        help="Resume a scan from the json export and to a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You can also use --resume exports/mydomain/date.json:export to just generate the html report",
+        help="Resume a scan from the json export. You can specify a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You can also use --resume exports/mydomain/date.json:export to just generate the html report",
     )
     args = argpars.parse_args()
     if not args.domain and not args.network and not args.ip and not args.resume:
