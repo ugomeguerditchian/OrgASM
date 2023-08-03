@@ -2,7 +2,7 @@ import json
 import datetime
 import lib.ip as ip_lib
 import os
-
+import random
 import lib.custom_logger as custom_logger
 
 logger = custom_logger.logger
@@ -29,6 +29,7 @@ class result:
     def __init__(self):
         self.result = {}
         self.deads = {"No ip": []}
+        self.metadata = {}
 
     def add_ip(self, ip: ip_lib.ip):
         """Add an ip to the result"""
@@ -98,6 +99,32 @@ class result:
         if vuln not in self.result[ip]["fqdns"][fqdn]["vulns"]:
             self.result[ip]["fqdns"][fqdn]["vulns"].append(vuln)
 
+    def total_ips(self):
+        """Return the total number of ips"""
+        return len(self.result)
+
+    def total_fqdns(self):
+        """Return the total number of fqdns"""
+        count = 0
+        for ip in self.result:
+            for fqdn in self.result[ip]["fqdns"]:
+                count += 1
+        return count
+
+    def get_random_ip(self):
+        """Return a random ip"""
+        return random.choice(list(self.result.keys()))
+
+    def get_random_fqdn(self):
+        """Return a random fqdn"""
+        ip = self.get_random_ip()
+        return random.choice(list(self.result[ip]["fqdns"].keys()))
+
+    def calculate_metadata(self):
+        """Calculate the metadata"""
+        self.metadata["total_ips"] = self.total_ips()
+        self.metadata["total_fqdns"] = self.total_fqdns()
+
     def status(self):
         fqdns = 0
         for ip in self.result:
@@ -130,6 +157,7 @@ class result:
     def export(self, name: str):
         """Export the result to a json file"""
         # tranform all ip obj inside the res into str
+        self.calculate_metadata()
         res_dict = {}
         for ip in self.result:
             res_dict[str(ip.ip)] = self.result[ip]
@@ -139,7 +167,7 @@ class result:
         # if name folder doesn't exist, create it
         if not os.path.isdir(f"exports/{name}"):
             os.mkdir(f"exports/{name}")
-
+        res_dict["metadata"] = self.metadata
         actual_date = datetime.datetime.now()
         with open(
             f"exports/{name}/{actual_date.strftime('%Y-%m-%d_%H-%M-%S')}.json", "w"

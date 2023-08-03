@@ -1,5 +1,6 @@
+dev_mode: true
 Proxy :
-    activate: False
+    activate: true
     file: null #path to file, one proxy per line
     links:
         https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt : "http"
@@ -58,7 +59,7 @@ API :
 SCOPE :
     FQDNs :
         file: False # path to file, one ip or fqdn per line
-        regex: False # regex to match
+        regex: False # regex to match example : ["example.com", "example.org", "^.*\.example\.com$"]
         list: False # list of ip or fqdn
     IPs :
         file: False # path to file, one ip or fqdn per line
@@ -67,26 +68,42 @@ SCOPE :
 
 
 TOOLS :
-    ports_scanner:
-        file: "ports_scanner"
-        activate: true
-        workers: 2000
-    detect_services:
-        file: "detect_services"
-        activate: true
-        workers: 2000    
-    analyze_web_techno:
-        file: "analyze_web_techno"
-        activate: true
-        workers: 2000
-    nuclei:
-        file: "nuclei"
-        headless_browser: True
-        activate: true
-        conf_file: null
+    AS_scan:
+        brute_subs:
+            file: "brute_subs"
+            activate: true
+            workers: 3000
+            wordlist_name: "n0kovo_subdomains_tiny.txt"
+            resolver_name: "resolvers.txt"
+            recursive: true
+    after_AS_scan:
+        ports_scanner:
+            file: "ports_scanner"
+            activate: true
+            workers: 2000
+        detect_services:
+            file: "detect_services"
+            activate: true
+            workers: 2000    
+        analyze_web_techno:
+            file: "analyze_web_techno"
+            activate: true
+            workers: 2000
+        nuclei:
+            file: "nuclei"
+            headless_browser: false
+            activate: true
+            conf_file: null
 
 WEB : #export
     activate : True
+    metadata:
+        depends_on : null
+        style: "list"
+        name: "Metadata"
+        tab: "Metadata"
+        mapper: "metadata"
+
     initial_scan:
         depends_on : null
         style: "table"
@@ -130,3 +147,12 @@ WEB : #export
         style: "table_multi"
         collumns: ["IP|FQDN", "Name", "Severity", "Cve-id", "Cwe-id", "Cvss-metrics", "Cvss-score", "Description", "Reference", "Type", "Host", "Matched-at", "Extracted-results", "Ip", "Timestamp", "curl-command", "matcher-status", "matched-line", "matcher-name", "Tags", "template", "template-url", "template-id", "template-path", "Author"]
         mapper: "return_nuclei"
+
+
+UPDATE :
+    - wordlists/n0kovo_subdomains_tiny.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_tiny.txt", "3:day" ]
+    - wordlists/n0kovo_subdomains_small.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_small.txt","3:day" ]
+    - wordlists/n0kovo_subdomains_medium.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_medium.txt", "3:day" ]
+    - wordlists/n0kovo_subdomains_large.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_large.txt", "3:day" ]
+    - wordlists/n0kovo_subdomains_huge.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_huge.txt", "3:day" ]
+    - resolvers/resolvers.txt: ["https://github.com/trickest/resolvers/blob/main/resolvers.txt", "30:min"]

@@ -1,25 +1,14 @@
 import random
-import scapy
-from scapy.all import *
-from scapy.contrib import socks
-from scapy.layers.inet import ICMP
-import socket
-import socks
 import os
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+from concurrent.futures import ThreadPoolExecutor
 import urllib3
-from urllib3 import Timeout
-from urllib3.contrib.socks import SOCKSProxyManager
 import lib.custom_logger as custom_logger
-import lib.ip as ip_lib
-import ssl
-from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-import datetime
-import json
 import yaml
 import requests
 import lib.custom_logger as custom_logger
+from packaging import version
+import json
 
 logger = custom_logger.logger
 
@@ -35,7 +24,21 @@ class configuration:
         except Exception as e:
             logger.error(f"[X] Error with configuration.yaml : {e}")
             exit()
-
+        version_manifest = version.parse(
+            json.loads(open("manifest.json", "r").read())["configuration_file_version"]
+        )
+        if not "version" in self.config:
+            logger.error("[X] Error: configuration.yaml is outdated")
+            logger.error(
+                "[X] Please update it with the new one or see the default_confgiuration.yaml file if you have recently updated"
+            )
+            exit()
+        if version.parse(self.config["version"]) < version_manifest:
+            logger.error("[X] Error: configuration.yaml is outdated")
+            logger.error(
+                "[X] Please update it with the new one or see the default_confgiuration.yaml file if you have recently updated"
+            )
+            exit()
         self.http_proxy = []
         self.https_proxy = []
         self.socks_proxy = []

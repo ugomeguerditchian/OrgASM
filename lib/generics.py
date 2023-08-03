@@ -1,31 +1,19 @@
-import random
-import scapy
-from scapy.all import *
-from scapy.contrib import socks
-from scapy.layers.inet import ICMP
-import socket
-import socks
 import os
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
-import urllib3
-from urllib3 import Timeout
-from urllib3.contrib.socks import SOCKSProxyManager
+from concurrent.futures import ThreadPoolExecutor
 import lib.custom_logger as custom_logger
 import lib.ip as ip_lib
-import ssl
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-import datetime
-import json
-import yaml
 from lib.handler import handler
 from lib.result import result
 from lib.domain import domain
+import tools.AS_scan.orc as AS_scan
 from lib.configuration import configuration
 from tqdm import tqdm
+import time
+import json
+import git
+import pyzipper
 
 import requests
-import re
 
 logger = custom_logger.logger
 
@@ -47,7 +35,7 @@ def fqdn_scanner(
             this_ip = ip_lib.ip(main_domain.ip, config)
         else:
             this_ip = res.get_ip_in_res(main_domain.ip)
-        
+
         res.add_fqdn(this_ip, main_domain.name)
     subs = main_domain.get_subs(config.ip_trough_proxy)
     # remove duplicates
@@ -100,7 +88,9 @@ def fqdn_scanner(
                             fqdn not in old_subs
                             or config.is_there_scope()
                             and config.is_in_scope(fqdn, mode="FQDNs")
+                            and fqdn not in old_subs
                         ):
+                            AS_scan.main(config, res, name=fqdn, recursive=True)
                             old_subs.append(fqdn)
                             logger.info(f"[*] Scanning subdomain {fqdn}")
                             sub_domain_future = executor.submit(domain, fqdn, config)
@@ -111,6 +101,7 @@ def fqdn_scanner(
                                     config.ip_trough_proxy,
                                 )
                             )
+
                 logger.info(
                     "[*] Waiting for {} threads to finish to getting subs".format(
                         len(futures_get_subs)
@@ -182,22 +173,111 @@ def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):
                 fqdn_scanner(fqdn, config, res, recursive)
 
 
-def check_update():
+def is_to_update(last_update, recurence, how_often):
+    if recurence == "secondes":
+        if time.time() - time.mktime(
+            time.strptime(last_update, "%d/%m/%Y %H:%M:%S")
+        ) > int(how_often):
+            return True
+    elif recurence == "minutes":
+        if (
+            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
+            > int(how_often) * 60
+        ):
+            return True
+    elif recurence == "hours":
+        if (
+            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
+            > int(how_often) * 3600
+        ):
+            return True
+    elif recurence == "days":
+        if (
+            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
+            > int(how_often) * 86400
+        ):
+            return True
+    return False
+
+
+def check_update(config: configuration):
     logger.info("Checking for update...")
-    try:
-        with open("manifest", "r") as f:
-            version = f.read()
-        url = (
-            f"https://raw.githubusercontent.com/ugomeguerditchian/OrgASM/main/manifest"
+    if not os.path.isfile("manifest.json"):
+        logger.error("manifest.json not found")
+        logger.warning(
+            "There is certainly an update available go on website : https://github.com/ugomeguerditchian/OrgASM"
         )
-        response = requests.get(url).text
-        if response == version:
-            logger.info("You are up to date")
-        else:
-            logger.warning(
-                "Update available, please download the new version on https://github.com/ugomeguerditchian/OrgASM"
-            )
-            logger.info("Resume in 3 seconds...")
-            time.sleep(3)
+        return
+    try:
+        with open("manifest.json", "r") as f:
+            manifest = json.load(f)
+        version = manifest["version"]
+        last_update = manifest["last_update"]
+        url = f"https://raw.githubusercontent.com/ugomeguerditchian/OrgASM/main/manifest.json"
+        try:
+            response = requests.get(url).json()
+            if response["version"] == version:
+                logger.info("You are up to date")
+            else:
+                logger.warning("Update available")
+                if git.cmd.Git().version() and not config.config.get("dev_mode", False):
+                    answer = input("Do you want to update? (y/n) : ")
+                    if answer.lower() == "y":
+                        repo = git.Repo(".")
+                        repo.remotes.origin.pull()
+                        logger.info("Update successful")
+                    elif answer.lower() == "n":
+                        pass
+                    else:
+                        logger.error("Wrong answer, aborting")
+                        pass
+                else:
+                    logger.warning("Git is not installed")
+                    answer = input(
+                        "Do you want to download the new version from GitHub? (y/n) : "
+                    )
+                    if answer.lower() == "y" and not config.config.get(
+                        "dev_mode", False
+                    ):
+                        url = f"https://github.com/ugomeguerditchian/OrgASM/archive/refs/tags/{response['version']}.zip"
+                        r = requests.get(url)
+                        with pyzipper.AESZipFile(
+                            "new_version.zip",
+                            "w",
+                            compression=pyzipper.ZIP_DEFLATED,
+                            encryption=pyzipper.WZ_AES,
+                        ) as zf:
+                            zf.writestr("new_version.zip", r.content)
+                        with pyzipper.AESZipFile("new_version.zip") as zf:
+                            zf.extractall()
+                        os.remove("new_version.zip")
+                        logger.info("Update successful")
+                logger.info(f"Last update: {last_update}")
+        except:
+            logger.error("Impossible to get url to check for update")
+            pass
     except Exception as e:
-        logger.error("Impossible to check for update")
+        logger.error(f"Impossible to check for update : {e}")
+    # now update file in config
+    to_update = config.config["UPDATE"]
+    for line in to_update:
+        # format : path_to_file : url
+        path = list(line.keys())[0]
+        recurence = line[path][1].split(":")[
+            1
+        ]  # can contains "secondes", "minutes", "hours", "days"
+        how_often = line[path][1].split(":")[0]  # can contains a number
+        if is_to_update(manifest["last_update"], recurence, how_often):
+            try:
+                response = requests.get(url)
+            except:
+                logger.error(f"Impossible to update {path}")
+                continue
+            with open(path, "w") as f:
+                f.write(response.text)
+            logger.info(f"Update {path} successful")
+    # update the manifest file with the last_update
+    with open("manifest.json", "w") as f:
+        last_update = time.strftime("%d/%m/%Y %H:%M:%S")
+        manifest["last_update"] = last_update
+        json.dump(manifest, f, indent=4)

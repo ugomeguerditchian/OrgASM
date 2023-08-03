@@ -20,7 +20,7 @@ def main(domain, handler: handler, key: str):
     subdomains = []
     for i in json_data["passive_dns"]:
         try:
-            if "*" not in subdomains.append(i["hostname"]):
+            if "*" not in i["hostname"]:
                 subdomains.append(i["hostname"])
         except:
             pass

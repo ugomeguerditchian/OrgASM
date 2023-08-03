@@ -9,7 +9,7 @@
  ░░░███████░   █████    ░░███████ █████   █████░░█████████  █████     █████
    ░░░░░░░    ░░░░░      ░░░░░███░░░░░   ░░░░░  ░░░░░░░░░  ░░░░░     ░░░░░ 
                          ███ ░███                                          
-                        ░░██████        V3.0.0                            
+                        ░░██████        V3.1.0                            
                          ░░░░░░                                            
                                                      
 ```
@@ -17,7 +17,10 @@
 
 
 
-A tool for mapping the attack surface of any type of target, it can find **subdomains, IPs and ports, services** and then scan them with other tools like **nuclei**, gobuster, wafwoof, etc....
+A tool for mapping the attack surface of any type of target, it can find **subdomains, IPs and ports, services** and then scan them with other tools like **nuclei**, ports scanner, service detector with wappalyzer, etc....
+
+It has been designed to be **modular** and **easy to use**.
+You can easily add your own **API** to find subdomains, and your own **tools** to run after the initial scan or **even during the Attack Surface discovery**.
 
 It can also **pivot** to other related FQDNs and IPs. Last but not least, it features a **web export** with all the information found, and a ***modularity that makes it easy to add data from your tools***!
 
@@ -28,9 +31,11 @@ All is organized by a **configuration.yaml** file, here you can set all the sett
 
 ## Features 👀
 * Discover Attack Surface
+* Modularity on AS (Attack Surface) tools so you can add your own !
 * Find subdomains related to domains
 * Easy modularity on API to find new subs
 * Easy configuration file
+* Automatic update (and easy to add your own files to be updated)
 * Find FQDN from an IP and find all associated subs
 * Retreive all certificates of the IP and FQDNs founds and detect SAN
 * Can pivot to others related FQDNs
@@ -58,6 +63,7 @@ python main.py -h
 * Certspotter
 
 ## Implemented tools 🔧
+* Bruteforce subdomains via wordlist and multiple resolvers
 * Ports scanner
 * Service detector
 * Wappalayzer for detected web ports and FQDNs
@@ -86,11 +92,7 @@ options:
 ```
 
 ## Roadmap 🏎️
-**Next week :**
-* Option to re do the intial scan after a tool
 * More api
-* During intial scan handling of API for IP informations
-* Add res.metadata to store statistic of the scan
 * Possibility to add your own jinja template for an html object inside the mapper of the tool
 
 ### Refer to Wiki for this :

@@ -32,9 +32,40 @@ def main(result: result):
     <th>template-path</th>
     <th>Info | author</th>>
     final = {
-        "ip1": {[{Name:[name], Severity:[severity]...}, {Name:[name], Severity:[severity]...}, ...]}
-        "ip2": {[{Name:[name], Severity:[severity]...}, {Name:[name], Severity:[severity]...}, ...]}
-        "fqdn": {[{Name:[name], Severity:[severity]...}, {Name:[name], Severity:[severity]...}, ...]}
+        "0": [
+            {
+                "Name": [],
+                "Severity": [],
+                "Cve-id": [],
+                "Cwe-id": [],
+                "Cvss-metrics": [],
+                "Cvss-score": [],
+                "Description": [],
+                "Reference": [],
+                "Type": [],
+                "Host": [],
+                "Matched-at": [],
+                "Extracted-results": [],
+                "Ip": [],
+                "Timestamp": [],
+                "curl-command": [],
+                "matcher-status": [],
+                "matched-line": [],
+                "matcher-name": [],
+                "Info | tags": [],
+                "Info | Metadata | verified": [],
+                "Info | Metadata | fofa-query": [],
+                "Info | Metadata | shodan-query": [],
+                "template": [],
+                "template-url": [],
+                "template-id": [],
+                "template-path": [],
+                "Info | author": [],
+            }
+        ]
+    }
+
+
     """
     final = {}
     for ip in result.result:

@@ -337,9 +337,12 @@ def main(config: gen.configuration, result: result):
             # use main of this mapper (mapper.main(result))
             mapper = config_data[tool]["mapper"]
             if (
-                tool in ["initial_scan", "deads"]
-                or tool not in ["initial_scan", "deads"]
-                and config.config["TOOLS"][tool]["activate"]
+                tool in ["initial_scan", "deads", "metadata"]
+                or tool not in ["initial_scan", "deads", "metadata"]
+                and tool in config.config["TOOLS"]["AS_scan"]
+                and config.config["TOOLS"]["AS_scan"][tool]["activate"]
+                or tool in config.config["TOOLS"]["after_AS_scan"]
+                and config.config["TOOLS"]["after_AS_scan"][tool]["activate"]
             ):
                 data = eval(f"web.mapper.{mapper}.main(result)")
                 for child in childs:
