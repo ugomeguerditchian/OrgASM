@@ -1,4 +1,3 @@
-dev_mode: true
 Proxy :
     activate: true
     file: null #path to file, one proxy per line
