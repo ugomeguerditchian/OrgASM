@@ -53,8 +53,8 @@ def main(config: configuration, res: result, name: str, resume=False, recursive=
                     # Add the tool's result to the main result
                     if tool_res and hasattr(tool_res, "result"):
                         res.result.update(tool_res.result)
-                        res.export(name)
                     if not recursive:
+                        res.export(name)
                         res.metadata["last_tool"] = tool
                 else:
                     logger.error(
@@ -69,8 +69,9 @@ def main(config: configuration, res: result, name: str, resume=False, recursive=
         tool_res = module.main(config=config, res=res)
         if tool_res and hasattr(tool_res, "result"):
             res.result.update(tool_res.result)
-            res.export(name)
-
+            if not recursive:
+                res.export(name)
+                res.metadata["last_tool"] = resume
             tools_ls = []
 
             for tool in tools.keys():
@@ -88,6 +89,6 @@ def main(config: configuration, res: result, name: str, resume=False, recursive=
                         tool_res = module.main(config=config, res=res, name=name)
                         if tool_res and hasattr(tool_res, "result"):
                             res.result.update(tool_res.result)
-                            res.export(name)
                             if not recursive:
+                                res.export(name)
                                 res.metadata["last_tool"] = tool
