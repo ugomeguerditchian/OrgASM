@@ -1,5 +1,7 @@
+dev_mode: false
+version: "2.0.0"
 Proxy :
-    activate: true
+    activate: false
     file: null #path to file, one proxy per line
     links:
         https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt : "http"
