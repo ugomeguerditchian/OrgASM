@@ -9,6 +9,7 @@ import requests
 import lib.custom_logger as custom_logger
 from packaging import version
 import json
+import re
 
 logger = custom_logger.logger
 
