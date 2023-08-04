@@ -257,6 +257,8 @@ def check_update(config: configuration):
                         os.remove("new_version.zip")
                         logger.info("Update successful")
                         exit(1)
+            elif response["version"] < version and config.config.get("dev_mode", False):
+                logger.warning("You are in dev mode, that my boi")
             elif response["version"] < version:
                 logger.info("Wtf bro, you are in the future")
         except:
