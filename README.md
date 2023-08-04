@@ -86,9 +86,7 @@ options:
                         Network to scan, don't forget the CIDR (ex: 192.168.1.0/24)
   -R RECURSIVE, --recursive RECURSIVE
                         Recursive scan, will rescan all the subdomains finds and go deeper as you want, default is 0
-  --resume RESUME       Resume a scan from the json export and to a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You   
-                        can also use --resume exports/mydomain/date.json:export to just generate the html report
-
+  --resume RESUME       Resume a scan from the json export. You can specify a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You can also use --resume exports/mydomain/date.json:export to just generate the html report
 ```
 
 ## Roadmap 🏎️
