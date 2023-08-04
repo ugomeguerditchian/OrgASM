@@ -221,7 +221,7 @@ def check_update(config: configuration):
             response = requests.get(url).json()
             if response["version"] == version:
                 logger.info("You are up to date")
-            else:
+            elif response["version"] > version:
                 logger.warning("Update available")
                 if git.cmd.Git().version() and not config.config.get("dev_mode", False):
                     answer = input("Do you want to update? (y/n) : ")
@@ -256,6 +256,9 @@ def check_update(config: configuration):
                             zf.extractall()
                         os.remove("new_version.zip")
                         logger.info("Update successful")
+                        exit(1)
+            elif response["version"] < version:
+                logger.info("Wtf bro, you are in the future")
         except:
             logger.error("Impossible to get url to check for update")
             pass
@@ -265,17 +268,17 @@ def check_update(config: configuration):
     # now update file in config
     to_update = config.config["UPDATE"]
 
-    if not os.path.isfile("manifest_tools.json"):
-        #create manifest_tools.json
+    if not os.path.isfile("manifest_update.json"):
+        #create manifest_update.json
         manifest_tools = {}
         for line in to_update:
             # format : path_to_file : url
             path = list(line.keys())[0]
             manifest_tools[path] = "01/01/2020 00:00:00"
-        with open("manifest_tools.json", "w") as f:
+        with open("manifest_update.json", "w") as f:
             json.dump(manifest_tools, f)
     #reset cursor
-    mamnifest_tools = json.loads(open("manifest_tools.json", "r").read())
+    manifest_update = json.loads(open("manifest_update.json", "r").read())
     for line in to_update:
         # format : path_to_file : url
         path = list(line.keys())[0]
@@ -284,7 +287,7 @@ def check_update(config: configuration):
             1
         ]  # can contains "secondes", "minutes", "hours", "days"
         how_often = line[path][1].split(":")[0]  # can contains a number
-        if is_to_update(mamnifest_tools[path], recurence, how_often):
+        if is_to_update(manifest_update[path], recurence, how_often):
             try:
                 response = requests.get(url)
             except:
@@ -293,7 +296,7 @@ def check_update(config: configuration):
             with open(path, "w") as f:
                 f.write(response.text)
             logger.info(f"Update {path} successful")
-            mamnifest_tools[path] = time.strftime("%d/%m/%Y %H:%M:%S")
-    with open("manifest_tools.json", "w") as f:
-        json.dump(mamnifest_tools, f)
+            manifest_update[path] = time.strftime("%d/%m/%Y %H:%M:%S")
+    with open("manifest_update.json", "w") as f:
+        json.dump(manifest_update, f)
    
