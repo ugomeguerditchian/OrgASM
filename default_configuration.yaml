@@ -76,7 +76,7 @@ TOOLS :
             workers: 3000
             wordlist_name: "n0kovo_subdomains_tiny.txt"
             resolver_name: "resolvers.txt"
-            recursive: false #if activated will try to get subs from subs founds in recursive scan WARNING : this can take a lot of time dependings on the number of subs found and wordlist size
+            recursive: true
     after_AS_scan:
         ports_scanner:
             file: "ports_scanner"
@@ -151,9 +151,9 @@ WEB : #export
 
 
 UPDATE :
-    - wordlists/n0kovo_subdomains_tiny.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_tiny.txt", "3:day" ]
-    - wordlists/n0kovo_subdomains_small.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_small.txt","3:day" ]
-    - wordlists/n0kovo_subdomains_medium.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_medium.txt", "3:day" ]
-    - wordlists/n0kovo_subdomains_large.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_large.txt", "3:day" ]
-    - wordlists/n0kovo_subdomains_huge.txt: ["https://raw.githubusercontent.com/n0k0m3/Wordlists/main/n0kovo_subdomains_huge.txt", "3:day" ]
-    - resolvers/resolvers.txt: ["https://github.com/trickest/resolvers/blob/main/resolvers.txt", "30:min"]
+    - tools/wordlists/n0kovo_subdomains_tiny.txt: ["https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/main/n0kovo_subdomains_tiny.txt", "3:days" ] #seconds, minutes, hours, days
+    - tools/wordlists/n0kovo_subdomains_small.txt: ["https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/main/n0kovo_subdomains_small.txt","3:days" ]
+    - tools/wordlists/n0kovo_subdomains_medium.txt: ["https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/main/n0kovo_subdomains_medium.txt", "3:days" ]
+    - tools/wordlists/n0kovo_subdomains_large.txt: ["https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/main/n0kovo_subdomains_large.txt", "3:days" ]
+    - tools/wordlists/n0kovo_subdomains_huge.txt: ["https://raw.githubusercontent.com/n0kovo/n0kovo_subdomains/main/n0kovo_subdomains_huge.txt", "3:days" ]
+    - tools/resolvers/resolvers.txt: ["https://raw.githubusercontent.com/trickest/resolvers/main/resolvers.txt", "30:minutes"]

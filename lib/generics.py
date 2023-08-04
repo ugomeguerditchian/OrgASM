@@ -174,30 +174,34 @@ def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):
 
 
 def is_to_update(last_update, recurence, how_often):
-    if recurence == "secondes":
-        if time.time() - time.mktime(
-            time.strptime(last_update, "%d/%m/%Y %H:%M:%S")
-        ) > int(how_often):
+    """Check if a file needs to be updated
+    last_update : date of last update
+    recurence : can contains "secondes", "minutes", "hours", "days"
+    how_often : can contains a number
+    """
+    if recurence == "seconds":
+        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
+            how_often
+        ):
             return True
     elif recurence == "minutes":
-        if (
-            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
-            > int(how_often) * 60
-        ):
+        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
+            how_often
+        ) * 60:
             return True
     elif recurence == "hours":
-        if (
-            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
-            > int(how_often) * 3600
-        ):
+        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
+            how_often
+        ) * 3600:
             return True
     elif recurence == "days":
-        if (
-            time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
-            > int(how_often) * 86400
-        ):
+        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
+            how_often
+        ) * 86400:
             return True
-    return False
+    else:
+        logger.error("Wrong recurence")
+        return False
 
 
 def check_update(config: configuration):
@@ -212,7 +216,6 @@ def check_update(config: configuration):
         with open("manifest.json", "r") as f:
             manifest = json.load(f)
         version = manifest["version"]
-        last_update = manifest["last_update"]
         url = f"https://raw.githubusercontent.com/ugomeguerditchian/OrgASM/main/manifest.json"
         try:
             response = requests.get(url).json()
@@ -253,22 +256,35 @@ def check_update(config: configuration):
                             zf.extractall()
                         os.remove("new_version.zip")
                         logger.info("Update successful")
-                logger.info(f"Last update: {last_update}")
         except:
             logger.error("Impossible to get url to check for update")
             pass
     except Exception as e:
         logger.error(f"Impossible to check for update : {e}")
+    
     # now update file in config
     to_update = config.config["UPDATE"]
+
+    if not os.path.isfile("manifest_tools.json"):
+        #create manifest_tools.json
+        manifest_tools = {}
+        for line in to_update:
+            # format : path_to_file : url
+            path = list(line.keys())[0]
+            manifest_tools[path] = "01/01/2020 00:00:00"
+        with open("manifest_tools.json", "w") as f:
+            json.dump(manifest_tools, f)
+    #reset cursor
+    mamnifest_tools = json.loads(open("manifest_tools.json", "r").read())
     for line in to_update:
         # format : path_to_file : url
         path = list(line.keys())[0]
+        url = line[path][0]
         recurence = line[path][1].split(":")[
             1
         ]  # can contains "secondes", "minutes", "hours", "days"
         how_often = line[path][1].split(":")[0]  # can contains a number
-        if is_to_update(manifest["last_update"], recurence, how_often):
+        if is_to_update(mamnifest_tools[path], recurence, how_often):
             try:
                 response = requests.get(url)
             except:
@@ -277,8 +293,7 @@ def check_update(config: configuration):
             with open(path, "w") as f:
                 f.write(response.text)
             logger.info(f"Update {path} successful")
-    # update the manifest file with the last_update
-    with open("manifest.json", "w") as f:
-        last_update = time.strftime("%d/%m/%Y %H:%M:%S")
-        manifest["last_update"] = last_update
-        json.dump(manifest, f, indent=4)
+            mamnifest_tools[path] = time.strftime("%d/%m/%Y %H:%M:%S")
+    with open("manifest_tools.json", "w") as f:
+        json.dump(mamnifest_tools, f)
+   
