@@ -1,5 +1,5 @@
 dev_mode: false
-version: "2.0.0"
+version: "2.0.1"
 Proxy :
     activate: true
     file: null #path to file, one proxy per line
