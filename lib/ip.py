@@ -19,31 +19,38 @@ from lib.configuration import configuration
 
 class network:
     def __init__(self, network: str):
+        """
+        Initializes a network object with the given network address.
+
+        :param network: The network address to scan.
+        """
         self.network = network
         self.ips = []
 
     def get_ip_from_network(self):
-        # scan the network and retrieve the ip addresses
-        # return the ip addresses
+        """
+        Scans the network and retrieves the IP addresses.
+
+        :return: The IP addresses found on the network.
+        """
         if not "/" in self.network:
             self.network = self.network + "/24"
-        # create the arp request
         arp = ARP(pdst=self.network)
-        # create the ether broadcast packet
-        # ff:ff:ff:ff:ff:ff MAC address indicates broadcasting
         ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-        # stack them
         packet = ether / arp
-        # send the packet and receive a response
         result = srp(packet, timeout=3, verbose=0)[0]
-        # a list of clients, we will fill this in the upcoming loop
         for sent, received in result:
-            # for each response, append ip and mac address to `clients` list
             self.ips.append(received.psrc)
 
 
 class ip:
     def __init__(self, ip: str, config: configuration):
+        """
+        Initializes an IP object with the given IP address and configuration.
+
+        :param ip: The IP address to scan.
+        :param config: The configuration object to use.
+        """
         self.ip = ipaddress.ip_address(ip)
         self.config = config
         self.handler = config.handler
@@ -55,10 +62,11 @@ class ip:
         self.ports = {}
 
     def ping(self) -> bool:
-        # ping the ip address using scapy
-        # return True if the ip is up, False otherwise
-        # create the arp request
+        """
+        Pings the IP address using Scapy.
 
+        :return: True if the IP is up, False otherwise.
+        """
         if self.ip.is_reserved:
             logger.error(f"{str(self.ip)} is reserved")
             return False
@@ -69,10 +77,15 @@ class ip:
             self.status = False
 
     def port_scan(self, ports, thread_number):
+        """
+        Scans the host with the given ports with a thread limit.
+
+        :param ports: The ports to scan.
+        :param thread_number: The number of threads to use.
+        :return: The open ports.
+        """
         open_ports = []
-        # create the thread pool
         with ThreadPoolExecutor(thread_number) as executor:
-            # dispatch all tasks
             n = len(ports)
             results = list(
                 tqdm(
@@ -80,7 +93,6 @@ class ip:
                     total=n,
                 )
             )
-            # wait for the tasks to complete
             for port, is_open in zip(ports, results):
                 if is_open:
                     open_ports.append(port)
@@ -90,6 +102,11 @@ class ip:
         return open_ports
 
     def check_filtered(self):
+        """
+        Checks if the IP is filtered.
+
+        :return: True if the IP is filtered, False otherwise.
+        """
         target_ports = range(30000, 65535)
         start = time.time()
         self.port_scan(random.sample(target_ports, 1000), 1000)
@@ -100,10 +117,14 @@ class ip:
             return False
 
     def ports_scan(self, ports: range, thread_number: int):
-        # scan the host with the ports with a thread limit
-        # return the open ports
+        """
+        Scans the host with the given ports with a thread limit.
+
+        :param ports: The ports to scan.
+        :param thread_number: The number of threads to use.
+        """
         if self.handler.socks5_proxy != [] and self.type == "local":
-            logger.warning("[!] Socks proxy is set but the ip is local")
+            logger.warning("[!] Socks proxy is set but the IP is local")
             logger.warning("[!] Socks proxy will be ignored")
             logger.info("Resuming in 3 seconds...")
             time.sleep(3)
@@ -111,7 +132,7 @@ class ip:
             self.handler.socks5_proxy = []
 
         if self.handler.socks5_proxy == []:
-            logger.info(f"Checking if {self.ip} filtered...")
+            logger.info(f"Checking if {self.ip} is filtered...")
             if self.check_filtered():
                 logger.warning(f"{self.ip} is filtered")
                 return
@@ -122,11 +143,21 @@ class ip:
             self.handler.socks5_proxy = tmp_socks5_proxy
 
     def detect_service(self, port):
-        # detect the service from the ip address and the port
-        # return the service
+        """
+        Detects the service from the IP address and the port.
+
+        :param port: The port to scan.
+        :return: The service.
+        """
         return {"service": self.handler.get_service(str(self.ip), port), "port": port}
 
     def try_access_web_port(self, port: str) -> bool:
+        """
+        Tries to access the web port of the IP address.
+
+        :param port: The port to scan.
+        :return: True if the port is accessible, False otherwise.
+        """
         try:
             self.handler.get(f"http://{str(self.ip)}:{port}")
             return True
@@ -138,6 +169,11 @@ class ip:
                 return {"port": port}
 
     def try_get_fqdn(self):
+        """
+        Tries to get the fully qualified domain name (FQDN) of the IP address.
+
+        :return: The FQDN if found, None otherwise.
+        """
         r = self.handler.get("http://" + str(self.ip), redirect=False)
         if r:
             fqdn = r.headers.get("Location")
@@ -145,7 +181,6 @@ class ip:
                 fqdn = fqdn.split("//")[1]
                 if "/" in fqdn:
                     fqdn = fqdn.split("/")[0]
-                # get the last part of the fqdn if it's a subdomain
                 fqdn = fqdn.split(".")[-2] + "." + fqdn.split(".")[-1]
                 if not "." in fqdn:
                     return None
@@ -160,6 +195,11 @@ class ip:
             return None
 
     def get_fqdns(self):
+        """
+        Gets the fully qualified domain names (FQDNs) of the IP address.
+
+        :return: The FQDNs if found, None otherwise.
+        """
         fqdns = self.handler.get_certificate_san(str(self.ip))
         if fqdns:
             for fqdn in fqdns:

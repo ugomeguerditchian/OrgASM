@@ -1,6 +1,6 @@
 import dns.resolver
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 from lib.ip import ip as ip_lib
 from lib.result import result
 import lib.generics as gen
@@ -10,7 +10,46 @@ import time
 logger = custom_logger.logger
 
 
-def main(config: gen.configuration, res: result, name: str):
+def resolve_and_store(
+    resolver: dns.resolver.Resolver,
+    subdomain: str,
+    fqdn: str,
+    config: gen.configuration,
+    res: result,
+    pbar: tqdm,
+) -> None:
+    """
+    Resolves the subdomain and stores the result inside res.result.
+
+    :param resolver: A dns.resolver.Resolver object used to resolve the subdomain.
+    :param subdomain: A string representing the subdomain to be resolved.
+    :param fqdn: A string representing the fully qualified domain name.
+    :param config: A gen.configuration object containing the configuration settings.
+    :param res: A result object used to store the results.
+    :param pbar: A tqdm object used to display the progress bar.
+    """
+    try:
+        answer = resolver.resolve(subdomain + "." + fqdn)
+        ip = str(answer[0])
+        name = str(answer.qname)
+        ip = ip_lib.ip(ip, config)
+        res.add_fqdn(ip, name)
+        # simulate some work being done
+        time.sleep(0.1)
+        pbar.update(1)
+    except:
+        pass
+
+
+def main(config: gen.configuration, res: result, name: str) -> result:
+    """
+    Main function for bruteforcing subdomains.
+
+    :param config: A gen.configuration object containing the configuration settings.
+    :param res: A result object used to store the results.
+    :param name: A string representing the domain name to be bruteforced.
+    :return: A result object containing the results of the bruteforcing.
+    """
     if not "brute_subs" in config.config["TOOLS"]["AS_scan"]:
         logger.error("[*] Missing brute_subs in TOOLS in config file")
         return
@@ -23,7 +62,7 @@ def main(config: gen.configuration, res: result, name: str):
     if not this_tool_config["activate"]:
         logger.info("[*] Skipping brute_subs")
         return
-
+    logger.info(f"[*] Bruteforcing subdomains for {name}")
     # get wordlist inside tools/worldlists
     wordlist = f"tools/wordlists/{this_tool_config['wordlist_name']}"
     # get resolver inside tools/resolvers
@@ -33,26 +72,22 @@ def main(config: gen.configuration, res: result, name: str):
     resolver_data = open(resolver_file).read().splitlines()
     # store all matched subdomains inside res.result, with the ip class as key
     resolver.nameservers = resolver_data
-
-    def resolve_and_store(subdomain):
-        # resolve and store inside res.result
-        try:
-            answer = resolver.resolve(subdomain + "." + fqdn)
-            ip = str(answer[0])
-            name = str(answer.qname)
-            ip = ip_lib.ip(ip, config)
-            res.add_fqdn(ip, name)
-        except:
-            pass
-
-    logger.info("[*] Bruteforcing subdomains")
     start_time = time.time()
+
     with open(wordlist) as f:
-        subdomains = [line.strip() for line in f]
-        with ThreadPoolExecutor(max_workers=this_tool_config["workers"]) as executor:
-            list(
-                tqdm(executor.map(resolve_and_store, subdomains), total=len(subdomains))
-            )
+        subdomains = {line.strip() for line in f}
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=this_tool_config["workers"]
+        ) as executor:
+            with tqdm(total=len(subdomains), leave=False) as pbar:
+                futures = [
+                    executor.submit(
+                        resolve_and_store, resolver, subdomain, fqdn, config, res, pbar
+                    )
+                    for subdomain in subdomains
+                ]
+                concurrent.futures.wait(futures)
+
     logger.info(
         f"[*] Bruteforcing subdomains finished in {(time.time() - start_time)/60} minutes"
     )

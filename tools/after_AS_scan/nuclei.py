@@ -6,123 +6,150 @@ from datetime import datetime
 import json
 from lib.result import result
 import lib.generics as gen
+from typing import Dict, List, Union
 
 logger = custom_logger.logger
 
 
 def check_if_nuclei_installed() -> bool:
-    # check if nuclei is installed by doing nuclei -h
-    # return True if installed, False otherwise
-    # use subprocess to run the command and don't show the output
+    """
+    Check if Nuclei is installed by running the command "nuclei -h".
+    Return True if installed, False otherwise.
+    """
     try:
-        subprocess.run(
+        subprocess.check_call(
             ["nuclei", "-h"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         return True
-    except:
+    except subprocess.CalledProcessError:
         return False
 
 
 def nuclei_scan(hosts: list, domain: str, vulnconf: str, headless=False) -> dict:
-    # scan the hosts with nuclei
-    # return the results
-    # check if nuclei is installed
-    logger.info("Checking if nuclei is installed...")
+    """
+    Scan the hosts with Nuclei and return the results as a list of dictionaries.
+    :param hosts: A list of hosts to scan.
+    :param domain: The domain name to use for the scan.
+    :param vulnconf: The path to the Nuclei config file to use for the scan.
+    :param headless: Whether to run the scan in headless mode or not.
+    :return: A list of dictionaries representing the scan results.
+    """
+    # Check if Nuclei is installed
+    logger.info("Checking if Nuclei is installed...")
     if not check_if_nuclei_installed():
         logger.error("Nuclei is not installed")
         return None
     else:
         logger.info("Nuclei is installed")
 
-    # create nuclei folder in project folder
-    if not os.path.exists("nuclei"):
-        os.mkdir("nuclei")
+    # Create Nuclei folder in project folder
+    os.makedirs("nuclei", exist_ok=True)
 
-    # create a folder for the domain
-    if not os.path.exists(f"nuclei/{domain}"):
-        os.mkdir(f"nuclei/{domain}")
+    # Create a folder for the domain
+    os.makedirs(f"nuclei/{domain}", exist_ok=True)
 
-    # create a hosts.txt with one host per line
+    # Create a hosts.txt file with one host per line
     with open(f"nuclei/{domain}/hosts.txt", "w") as f:
         for host in hosts:
-            f.write(f"{host}\r")
-        f.close()
-        # parse the file and delete if line is empty
-        with open(f"nuclei/{domain}/hosts.txt", "r") as f:
-            lines = f.readlines()
-            f.close()
-        with open(f"nuclei/{domain}/hosts.txt", "w") as f:
-            for line in lines:
-                if line.strip("\r") != "":
-                    f.write(line)
-            f.close()
+            f.write(f"{host}\n")
+    # Parse the file and delete empty lines
+    with open(f"nuclei/{domain}/hosts.txt", "r") as f:
+        lines = f.readlines()
+    with open(f"nuclei/{domain}/hosts.txt", "w") as f:
+        for line in lines:
+            if line.strip() != "":
+                f.write(line)
 
-    # update nuclei don't show the output
-    logger.info("Updating nuclei")
+    # Update Nuclei
+    logger.info("Updating Nuclei")
     subprocess.run(
-        ["nuclei", "-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ["nuclei", "-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
     )
-    # update nuclei templates
-    logger.info("Updating nuclei templates")
+    # Update Nuclei templates
+    logger.info("Updating Nuclei templates")
     subprocess.run(
-        ["nuclei", "-ut"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        ["nuclei", "-ut"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
     )
 
-    # run nuclei and save the results in a json file
-    # countdown to 5 seconds
-    logger.info("Starting nuclei scan in 5 seconds")
-    for i in range(5, 0, -1):
-        logger.info(f"{i}...")
-        time.sleep(1)
+    # Run Nuclei and save the results in a JSON file
+    logger.info("Starting Nuclei scan...")
     actual_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     if vulnconf:
-        try:
-            with open(vulnconf, "r") as f:
-                f.close()
-        except:
-            logger.error("Error : Vuln config file not found")
+        if not os.path.isfile(vulnconf):
+            logger.error("Error: Vuln config file not found")
             return None
-        logger.info("Running nuclei with config file")
+        logger.info("Running Nuclei with config file")
         os.system(
             f"nuclei -l nuclei/{domain}/hosts.txt -config {vulnconf} -json -o nuclei/{domain}/results.json"
         )
     else:
+        args = [
+            f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -timeout 3 -page-timeout 3 -jsonl -o nuclei/{domain}/results_{actual_time}.json"
+        ]
         if headless:
-            os.system(
-                f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -timeout 3 -page-timeout 3 -headless -jsonl -o nuclei/{domain}/results_{actual_time}.json"
-            )
-        else:
-            os.system(
-                f"nuclei -l nuclei/{domain}/hosts.txt -rl 500 -c 200 -bs 200 -hbs 200 -headc 200 -timeout 3 -page-timeout 3 -jsonl -o nuclei/{domain}/results_{actual_time}.json"
-            )
-    # read the output
-    with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
-        if f.read() == "":
-            return None
-        # each line is a json
-        f.seek(0)
-        results = []
-        for line in f:
-            results.append(json.loads(line))
-        f.close()
+            args.append("-headless")
+        os.system(" ".join(args))
+
+    # Read the output
+    results = []
+    while True:
+        time.sleep(1)
+        if os.path.isfile(f"nuclei/{domain}/results_{actual_time}.json"):
+            with open(f"nuclei/{domain}/results_{actual_time}.json", "r") as f:
+                for line in f:
+                    results.append(json.loads(line))
+            break
+
     return results
 
 
-def main(config: gen.configuration, res: result) -> dict:
+def main(config: gen.configuration, res: result) -> Dict:
+    """
+    This function is the main function that runs the nuclei scan.
+    It takes in the configuration and result objects and returns the result object with the nuclei scan results added.
+    """
+    # Check if nuclei is in the config file
     if not "nuclei" in config.config["TOOLS"]["after_AS_scan"]:
         logger.error("[*] Missing nuclei in TOOLS in config file")
         return
+
+    # Check if the necessary parameters are in the nuclei config
     this_tool_config = config.config["TOOLS"]["after_AS_scan"]["nuclei"]
     to_have = ["activate", "conf_file"]
     for i in to_have:
         if i not in this_tool_config:
             logger.error(f"[*] Missing {i} in config file")
             return
+
+    # Check if nuclei is activated
     if not this_tool_config["activate"]:
         logger.info("[*] Skipping nuclei")
         return
 
-    logger.info("Running nuclei scan...")
+    # Get a list of all hosts to scan
+    hosts_list = get_hosts_list(res)
+
+    # Get the domain to scan
+    domain = get_domain(res, config)
+
+    # Check if headless browser is enabled
+    headless = this_tool_config["headless_browser"]
+
+    # Run the nuclei scan
+    nuclei_results = nuclei_scan(
+        hosts_list, domain, this_tool_config["conf_file"], headless
+    )
+
+    # Parse the nuclei results and add them to the result object
+    parse_nuclei_results(nuclei_results, res)
+
+    return res.result
+
+
+def get_hosts_list(res: result) -> List[str]:
+    """
+    This function takes in the result object and returns a list of all hosts to scan.
+    """
     hosts_list = []
     for ip in res.result:
         hosts_list.append(str(ip.ip))
@@ -138,8 +165,13 @@ def main(config: gen.configuration, res: result) -> dict:
             ):
                 hosts_list.append("https://" + str(ip.ip) + ":" + str(port))
                 hosts_list.append("http://" + str(ip.ip) + ":" + str(port))
+    return hosts_list
 
-    # domain is the fqdn with minmal len
+
+def get_domain(res: result, config: gen.configuration) -> str:
+    """
+    This function takes in the result and configuration objects and returns the domain to scan.
+    """
     fqdns = []
     for ip in res.result:
         for fqdn in res.result[ip]["fqdns"]:
@@ -152,13 +184,19 @@ def main(config: gen.configuration, res: result) -> dict:
         headless = True
     else:
         headless = False
-    nuclei_results = nuclei_scan(
-        hosts_list, domain, this_tool_config["conf_file"], headless
-    )
-    logger.info("Nuclei scan finished")
+    return domain
+
+
+def parse_nuclei_results(
+    nuclei_results: List[Dict[str, Union[str, List[str]]]], res: result
+) -> None:
+    """
+    This function takes in the nuclei scan results and the result object and adds the nuclei results to the result object.
+    """
     if nuclei_results:
         logger.info("Parsing nuclei results...")
-        # in ip_dict add vulns key and add the nuclei results
+
+        # Add nuclei results to IP addresses
         for ip in res.result:
             res.result[ip]["vulns"] = []
             for result_ in nuclei_results:
@@ -172,8 +210,8 @@ def main(config: gen.configuration, res: result) -> dict:
                     and result_ not in res.result[ip]["vulns"]
                 ):
                     res.result[ip]["vulns"].append(result_)
-        # add vulns key to subdomains and add the nuclei results, split the 'https://' from the subdomain
 
+        # Add nuclei results to subdomains
         for ip in res.result:
             for fqdn in res.result[ip]["fqdns"]:
                 res.result[ip]["fqdns"][fqdn]["vulns"] = []
@@ -190,4 +228,3 @@ def main(config: gen.configuration, res: result) -> dict:
                         res.result[ip]["fqdns"][fqdn]["vulns"].append(result_)
 
         logger.info("Nuclei results parsed")
-    return res.result

@@ -28,18 +28,41 @@ class handler:
     """Generic class for handling GET and socket connection requests, can be linked to a proxy"""
 
     def __init__(self, config: configuration):
+        """
+        Initializes the handler object with the given configuration.
+
+        :param config: A configuration object.
+        """
         self.http_proxy = config.http_proxy
         self.https_proxy = config.https_proxy
         self.socks5_proxy = config.socks_proxy
         self.get_proxy_worker = config.get_proxy_worker
 
     def there_is_proxy(self):
+        """
+        Checks if there is a proxy available.
+
+        :return: True if there is a proxy available, False otherwise.
+        """
         if self.http_proxy == [] and self.https_proxy == [] and self.socks5_proxy == []:
             return False
         else:
             return True
 
-    def getter(self, url, redirect, until_ok, params=None, headers=None):
+    def getter(
+        self, url: str, redirect: bool, until_ok: bool, params=None, headers=None
+    ):
+        """
+        Sends a GET request using a random proxy.
+
+        :param url: The URL to send the request to.
+        :param redirect: Whether or not to follow redirects.
+        :param until_ok: Whether or not to keep trying until a successful response is received.
+        :param params: Optional parameters to include in the request.
+        :param headers: Optional headers to include in the request.
+
+        :return: A response object if the request was successful, None otherwise.
+        """
         types = ["http", "https", "socks5"]
         while True:
             rand_type = random.choice(types)
@@ -87,8 +110,25 @@ class handler:
                 self.socks5_proxy.remove(rand_proxy.split("://")[1])
             return None
 
-    def get(self, url, params=None, headers=None, redirect=True, until_ok=False):
-        """GET request, returns response object"""
+    def get(
+        self,
+        url: str,
+        params=None,
+        headers=None,
+        redirect: bool = True,
+        until_ok: bool = False,
+    ):
+        """
+        Sends a GET request using a random proxy.
+
+        :param url: The URL to send the request to.
+        :param params: Optional parameters to include in the request.
+        :param headers: Optional headers to include in the request.
+        :param redirect: Whether or not to follow redirects.
+        :param until_ok: Whether or not to keep trying until a successful response is received.
+
+        :return: A response object if the request was successful, None otherwise.
+        """
         # launch a pool of threads, when one is done, return the response and kill the others
         pool = []
         retry_strategy = urllib3.Retry(
@@ -145,7 +185,16 @@ class handler:
                             return data
 
     def connect(self, ip: str, port: int):
-        """Connect to the port using a random socks proxy"""
+        """Connect to the given IP address and port using a random SOCKS5 proxy if available.
+
+        :param ip: The IP address to connect to.
+        :type ip: str
+        :param port: The port to connect to.
+        :type port: int
+        :return: True if the connection was successful, False otherwise.
+        :rtype: bool
+        """
+        # Function to connect to the given IP address and port using a random SOCKS5 proxy if available.
         if self.socks5_proxy == []:
             s = socket.socket()
             s.settimeout(3)
@@ -170,7 +219,14 @@ class handler:
                 return False
 
     def ping(self, this_ip):
-        """Ping the ip using Scapy and SOCKS5 if available"""
+        """Ping the given IP address using Scapy and SOCKS5 if available.
+
+        :param this_ip: The IP address to ping.
+        :type this_ip: lib.ip.IP
+        :return: True if the IP address is up, False otherwise.
+        :rtype: bool
+        """
+        # Function to ping the given IP address using Scapy and SOCKS5 if available.
         import lib.ip as ip
 
         logger.info(f"Checking if {str(this_ip.ip)} is up...")
@@ -202,7 +258,14 @@ class handler:
             return True
 
     def get_cert_fqdn(self, hostname: str):
-        """Get the fqdn of the hostname using the certificate"""
+        """Get the fully qualified domain name (FQDN) of the given hostname using the certificate.
+
+        :param hostname: The hostname to get the FQDN for.
+        :type hostname: str
+        :return: The FQDN of the hostname if it can be obtained from the certificate, None otherwise.
+        :rtype: str or None
+        """
+        # Function to get the fully qualified domain name (FQDN) of the given hostname using the certificate.
         try:
             if self.socks5_proxy == []:
                 cert = ssl.get_server_certificate((hostname, 443))
@@ -211,10 +274,10 @@ class handler:
                 )  # Convert certificate to DER format
                 begin = (
                     cert.rfind(b"\x06\x03\x55\x04\x03") + 7
-                )  # Find the last occurence of this byte string indicating the CN, add 7 bytes to startpoint to account for length of byte string and padding
+                )  # Find the last occurrence of this byte string indicating the CN, add 7 bytes to start point to account for length of byte string and padding
                 end = (
                     begin + cert[begin - 1]
-                )  # Set endpoint to startpoint + the length of the CN
+                )  # Set endpoint to start point + the length of the CN
                 fqdn = cert[begin:end].decode("utf-8")  # Decode the CN
                 if fqdn.startswith("*."):
                     fqdn = fqdn[2:]
@@ -236,117 +299,75 @@ class handler:
                 return fqdn
         except Exception as e:
             socks.set_default_proxy()
-            logger.error(f"Impossible to get the fqdn of {hostname} from certificate")
+            logger.error(f"Unable to get the FQDN of {hostname} from the certificate")
             return None
 
-    def get_certificate_san(self, hostname: str):
-        """Get the Subject Alternative Name of the certificate"""
-        subs = []
+    def connect_and_send(self, ip: str, port: int) -> str:
+        """
+        Connect to a given IP address and port and send a request.
+
+        :param ip: The IP address to connect to.
+        :type ip: str
+        :param port: The port to connect to.
+        :type port: int
+
+        :return: The response from the server.
+        :rtype: str
+        """
         try:
-            if self.socks5_proxy == []:
-                cert = ssl.get_server_certificate((hostname, 443)).encode("utf-8")
-                loaded_cert = x509.load_pem_x509_certificate(cert, default_backend())
-
-                common_name = loaded_cert.subject.get_attributes_for_oid(
-                    x509.oid.NameOID.COMMON_NAME
-                )
-                subs.append(common_name[0].value)
-
-                san = loaded_cert.extensions.get_extension_for_class(
-                    x509.SubjectAlternativeName
-                )
-                san_dns_names = san.value.get_values_for_type(x509.DNSName)
-                for dns_name in san_dns_names:
-                    subs.append(dns_name)
-                for sub in subs:
-                    # avoid ip or chunk like "2.47"
-                    if not "." in sub:
-                        subs.remove(sub)
-                        continue
-                    spl = sub.split(".")[-1]
-                    if not spl or spl.isnumeric():
-                        subs.remove(sub)
-                return subs
-            else:
-                rand_proxy = random.choice(self.socks5_proxy)
-                socks.set_default_proxy(socks.SOCKS5, rand_proxy)
-                socket.socket = socks.socksocket
-                cert = ssl.get_server_certificate((hostname, 443)).encode("utf-8")
-                loaded_cert = x509.load_pem_x509_certificate(cert, default_backend())
-
-                common_name = loaded_cert.subject.get_attributes_for_oid(
-                    x509.oid.NameOID.COMMON_NAME
-                )
-                subs.append(common_name[0].value)
-
-                san = loaded_cert.extensions.get_extension_for_class(
-                    x509.SubjectAlternativeName
-                )
-                san_dns_names = san.value.get_values_for_type(x509.DNSName)
-                for dns_name in san_dns_names:
-                    subs.append(dns_name)
-                for sub in subs:
-                    # avoid ip or chunk like "2.47"
-                    if not "." in sub:
-                        subs.remove(sub)
-                        continue
-                    spl = sub.split(".")[-1]
-                    if not spl or spl.isnumeric():
-                        subs.remove(sub)
-                socks.set_default_proxy()
-                return subs
-
+            s = socket.socket()
+            s.settimeout(3)
+            s.connect((ip, port))
+            s.send(b"HEAD / HTTP/1.1\r\n\r\n")
+            data = s.recv(1024)
+            s.close()
+            return data.decode("utf-8")
         except Exception as e:
-            socks.set_default_proxy()
-            if "such file" in str(e):
-                logger.warning("No certificate found for {}".format(hostname))
-                return None
-            logger.error(f"Impossible to get the SAN of {hostname}")
+            logger.error(f"Impossible to get the service on {ip}:{port}")
             return None
 
-    def get_service(self, ip: str, port: int):
-        """Get the services running on the port"""
+    def get_certificate_san(self, domain: str) -> str:
+        """
+        Get the Subject Alternative Names (SAN) of a given domain.
+
+        :param domain: The domain to get the SAN for.
+        :type domain: str
+
+        :return: The SAN of the given domain.
+        :rtype: str
+        """
         try:
-            if self.socks5_proxy == []:
-                s = socket.socket()
-                s.settimeout(3)
-                s.connect((ip, port))
-                s.send(b"HEAD / HTTP/1.1\r\n\r\n")
-                data = s.recv(1024)
-                s.close()
-                return data.decode("utf-8")
-            else:
-                try:
-                    rand_proxy = random.choice(self.socks5_proxy)
-                    socks.set_default_proxy(socks.SOCKS5, rand_proxy)
-                    socket.socket = socks.socksocket
-                    s = socket.socket()
-                    s.settimeout(3)
-                    s.connect((ip, port))
-                    s.send(b"HEAD / HTTP/1.1\r\n\r\n")
-                    data = s.recv(1024)
-                    s.close()
-                    socks.set_default_proxy()
-                    return data.decode("utf-8")
-                except:
-                    socks.set_default_proxy()
-                    logger.warning(
-                        f"Impossible to get the service on {ip}:{port}, trying without proxy"
-                    )
-                    s = socket.socket()
-                    s.settimeout(3)
-                    s.connect((ip, port))
-                    s.send(b"HEAD / HTTP/1.1\r\n\r\n")
-                    data = s.recv(1024)
-                    s.close()
-                    return data.decode("utf-8")
+            ip = socket.gethostbyname(domain)
+            return self.connect_and_send(ip, 443)
         except Exception as e:
-            socks.set_default_proxy()
+            logger.error(f"Impossible to get the SAN for {domain}")
+            return None
+
+    def get_service(self, ip: str, port: int) -> str:
+        """
+        Get the services running on a given IP address and port.
+
+        :param ip: The IP address to get the services for.
+        :type ip: str
+        :param port: The port to get the services for.
+        :type port: int
+
+        :return: The services running on the given IP address and port.
+        :rtype: str
+        """
+        try:
+            return self.connect_and_send(ip, port)
+        except Exception as e:
             logger.error(f"Impossible to get the service on {ip}:{port}")
             return None
 
     def remove_proxys(self) -> dict:
-        """Remove all the proxy from the configuration"""
+        """
+        Remove all the proxy configurations.
+
+        :return: A dictionary containing the old proxy configurations.
+        :rtype: dict
+        """
         olds = {}
         olds["http"] = self.http_proxy
         olds["https"] = self.https_proxy
@@ -357,7 +378,12 @@ class handler:
         return olds
 
     def add_proxys(self, olds: dict):
-        """Add the proxy from olds to the configuration"""
+        """
+        Add the old proxy configurations.
+
+        :param olds: The old proxy configurations to add.
+        :type olds: dict
+        """
         self.http_proxy = olds["http"]
         self.https_proxy = olds["https"]
         self.socks5_proxy = olds["socks5"]

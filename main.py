@@ -16,10 +16,11 @@ import argparse
 logger = cl.logger
 
 
+# This function is the main entry point of the program
 def main():
+    # Print the ASCII art banner
     print(
         """
-
     ███████                         █████████    █████████  ██████   ██████
   ███░░░░░███                      ███░░░░░███  ███░░░░░███░░██████ ██████ 
  ███     ░░███ ████████   ███████ ░███    ░███ ░███    ░░░  ░███░█████░███ 
@@ -31,15 +32,24 @@ def main():
                          ███ ░███                                          
                         ░░██████                                           
                          ░░░░░░                                            
-                                                     
-                                                     
-                                                     """
+
+        """
     )
+
+    # Get the current time and date
     start_time = datetime.datetime.now()
     date = start_time.strftime("%Y-%m-%d_%H-%M-%S")
+
+    # Load the configuration
     config = configuration()
+
+    # Check for updates
     check_update(config)
+
+    # Initialize the handler
     config.handler = handler(config)
+
+    # Parse the command line arguments
     argpars = argparse.ArgumentParser()
     res = result()
     res.metadata["date"] = date
@@ -68,9 +78,13 @@ def main():
         help="Resume a scan from the json export. You can specify a tool (the last one to have finished), split with a ':' (ex: --resume exports/mydomain/date.json:nuclei) You can also use --resume exports/mydomain/date.json:export to just generate the html report",
     )
     args = argpars.parse_args()
+
+    # Check if the user provided a domain, IP, network or resume file
     if not args.domain and not args.network and not args.ip and not args.resume:
         argpars.print_help()
         exit()
+
+    # Set the input type and name based on the user's input
     if args.domain:
         name = args.domain
         res.metadata["input"] = name
@@ -91,6 +105,7 @@ def main():
 
     logger.info("[*] Starting tools to run before AS scan")
 
+    # Check if the user wants to resume a previous scan
     if args.resume:
         if ":" in args.resume:
             # if more than one : in the resume argument
@@ -109,28 +124,42 @@ def main():
                 logger.error(f"[*] Error: no tool specified")
                 exit(1)
 
+        # Check if the specified tool exists
         if tool != "export" and not os.path.exists(f"tools/{tool}.py"):
             logger.error(f"[*] Error: tool {tool} does not exist")
             exit(1)
+
+        # Check if the specified export file exists
         if not os.path.exists(resume_file):
             logger.error(f"[*] Error: export json {resume_file} does not exist")
             exit(1)
+
+        # Check if the specified export file is a file
         if not os.path.isfile(resume_file):
             logger.error(f"[*] Error: export json {resume_file} is not a file")
             exit(1)
+
         try:
+            # Load the data from the export file
             data = json.load(open(resume_file, "r"))
             new = {}
             changed = False
+
+            # Remove any proxies from the configuration if necessary
             if not config.ip_trough_proxy and config.handler.there_is_proxy():
                 olds = config.handler.remove_proxys()
-            # pop metadata inside data and put it inside res.metadata
+
+            # Move the metadata from the data dictionary to the result metadata
             res.metadata = data.pop("metadata")
+
+            # Convert the IP addresses to IP objects
             for ip in data:
-                # replace the ip by the ip class
                 new[ip_lib.ip(ip, config)] = data[ip]
+
             if changed:
                 config.handler.add_proxys(olds)
+
+            # Set the result to the new IP dictionary
             res.result = new
             res.printer()
             res.status()
@@ -139,9 +168,11 @@ def main():
             config = configuration()
             config.handler = handler(config)
             resume = tool
+
         except:
             logger.error(f"[*] Error: {resume_file} is not in right format")
 
+        # Run the specified tool and scan the input
         if tool in config.config["TOOLS"]["AS_scan"]:
             AS_scan.main(config, res, name, resume)
             if res.metadata["input_type"] == "domain":
@@ -150,16 +181,20 @@ def main():
                 ip_scanner(res.metadata["input"], config, res, args.recursive)
         else:
             resume = False
+
         logger.info("[*]")
 
+    # If the user provided a domain, scan it
     elif args.domain:
         AS_scan.main(config, res, name)
         fqdn_scanner(args.domain, config, res, args.recursive)
 
+    # If the user provided an IP address, scan it
     elif args.ip:
         AS_scan.main(config, res, name)
         ip_scanner(args.ip, config, res, args.recursive)
 
+    # If the user provided a network, scan it
     elif args.network:
         AS_scan.main(config, res, name)
         logger.info("[*] Scanning network")
@@ -168,9 +203,12 @@ def main():
         for ip in this_network.ips:
             ip_scanner(ip, config, res, args.recursive)
 
+    # Print the result status and scan completion message
     res.status()
     logger.info("[*] Attack Surface scan finished")
     res.printer()
+
+    # If we're not resuming a scan, run the after scan tools
     if not resume:
         after_AS_scan.main(config, res, name)
     else:
@@ -178,20 +216,26 @@ def main():
             pass
         else:
             after_AS_scan.main(config, res, name, resume)
+
+    # Calculate the total time taken and add it to the result metadata
     end_time = datetime.datetime.now()
     logger.info(f"[*] Total time: {end_time - start_time}")
     res.metadata["time"] = str(end_time - start_time)
-    # export the result
+
+    # Export the result to a JSON file
     try:
         if "tool" in locals() and tool != "export":
             res.export(name)
     except Exception as e:
         logger.error(f"Error while exporting the result: {e}")
+
+    # Generate a web page for the result
     try:
         if "WEB" in config.config:
             if config.config["WEB"]["activate"]:
                 html = web_generator(config, res)
-                # put it inside export and the folder of the domain
+
+                # Save the web page to a file
                 actual_date = datetime.datetime.now()
                 if not os.path.exists(f"exports/{name}"):
                     os.makedirs(f"exports/{name}")
@@ -214,7 +258,7 @@ def main():
                 """
                 [*] Most of the time when resuming, this is due to a tool that are activated
                     in the config file but their result are not in the export json file.
-                    Check your config file and the export json file.
+                    Check your config file and the json file.
             """
             )
 

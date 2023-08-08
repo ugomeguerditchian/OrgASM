@@ -4,6 +4,7 @@ import lib.generics as gen
 import importlib
 import os
 import web.mapper
+from typing import List, Dict
 
 dir = os.path.dirname(__file__)
 
@@ -278,9 +279,10 @@ def end_tab_content() -> str:
     return template.render()
 
 
-def get_tools_order(config: gen.configuration) -> list:
+def get_tools_order(config: gen.configuration) -> Dict[str, List[str]]:
     """
-    Return a dict. As the tool can "depends_on" other tool the dict will be like:
+    Return a dictionary of tools and their dependencies.
+    The dictionary is structured as follows:
     {
         "tool1": ["tool2", "tool3"],
         "tool5": ["tool4"],
@@ -291,18 +293,18 @@ def get_tools_order(config: gen.configuration) -> list:
     for tool in config.config["WEB"]:
         if tool == "activate":
             continue
-        if tool not in order and config.config["WEB"][tool]["depends_on"] == None:
+        if tool not in order and config.config["WEB"][tool]["depends_on"] is None:
             order[tool] = []
         for tool2 in config.config["WEB"]:
-            if config.config["WEB"][tool]["depends_on"] != None:
+            if config.config["WEB"][tool]["depends_on"] is not None:
                 if tool2 == config.config["WEB"][tool]["depends_on"]:
                     order[tool2].append(tool)
     return order
 
 
-def get_tools_tabs(config: gen.configuration) -> list:
+def get_tools_tabs(config: gen.configuration) -> List[str]:
     """
-    Return a list of all the tabs
+    Return a list of all the tabs.
     """
     tabs = []
     for tool in config.config["WEB"]:
@@ -315,7 +317,10 @@ def get_tools_tabs(config: gen.configuration) -> list:
     return tabs
 
 
-def main(config: gen.configuration, result: result):
+def main(config: gen.configuration, result: result) -> str:
+    """
+    Generate a website based on the configuration and result objects.
+    """
     website_code = head()
     tabs = get_tools_tabs(config)
     website_code += start_body()

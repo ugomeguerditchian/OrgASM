@@ -7,84 +7,74 @@ import lib.custom_logger as custom_logger
 logger = custom_logger.logger
 
 
-def main(config: gen.configuration, res: result, name: str, resume=False):
-    """Main function for the orchestration of the tools
-
-
-    Ex (in config):
-
-        TOOLS :
-        ports_scanner:
-            file: "ports_scanner.py"
-            trough_proxy: False
-            detect_service: True
-            detect_web_port: True
-
-    The file need to be inside the tools folder
-    All tools script must have a "main" function
-
-    generic parameters:
-        file : file name of the script
-
-    All the others parameters will be passed to the script specificified in the path
-
-    res will also be passed to the script so you can add your own data architecture to the result
-    you can create your own child reslult to implement new def like "add_ports"
+def execute_tool(config: gen.configuration, res: result, name: str, tool: str) -> None:
     """
+    Executes a single tool specified by the tool parameter.
 
-    tools = config.config["TOOLS"]["after_AS_scan"]
-    if not resume:
-        for tool, tool_config in tools.items():
-            file = tool_config.get("file")
+    :param config: gen.configuration object containing the configuration for the tools
+    :param res: result object containing the results of the tools
+    :param tool: str containing the name of the tool to execute
+    :return: None
+    """
+    tool_config = config.config["TOOLS"]["after_AS_scan"][tool]
+    file = tool_config.get("file")
 
-            if file:
-                # Import the tool's script
-                module = importlib.import_module(f"tools.after_AS_scan.{file}")
-                # Check if the tool's script has a main function
-                if hasattr(module, "main"):
-                    # Call the main function of the tool's script
-                    try:
-                        tool_res = module.main(config=config, res=res)
-                    except Exception as e:
-                        logger.error(
-                            f"Error: Tool '{tool}' has failed with error : {e}"
-                        )
-                        continue
-
-                    # Add the tool's result to the main result
-                    if tool_res and hasattr(tool_res, "result"):
-                        res.result.update(tool_res.result)
-                        res.export(name)
-                    res.metadata["last_tool"] = tool
-                else:
-                    logger.error(
-                        f"Error: Tool '{tool}' does not have a 'main' function."
-                    )
-            else:
-                logger.error(f"Error: Tool '{tool}' does not have a 'file' parameter.")
-    else:
-        # resume var contains the name of the tool to resume
-        file = tools[resume]["file"]
-        module = importlib.import_module(f"tools.{file}")
-        tool_res = module.main(config=config, res=res)
-        if tool_res and hasattr(tool_res, "result"):
-            res.result.update(tool_res.result)
-            res.export(name)
-
-            tools_ls = []
-
-            for tool in tools.keys():
-                tools_ls.append(tool)
-
-            index = list(tools_ls).index(resume)
-            to_use = []
-            for i in tools_ls[index + 1 :]:
-                to_use.append(i)
-            for tool in to_use:
-                file = tools[tool]["file"]
-                module = importlib.import_module(f"tools.{file}")
+    if file:
+        module = importlib.import_module(f"tools.after_AS_scan.{file}")
+        if hasattr(module, "main"):
+            try:
                 tool_res = module.main(config=config, res=res)
-                if tool_res and hasattr(tool_res, "result"):
-                    res.result.update(tool_res.result)
-                    res.export(name)
-                    res.metadata["last_tool"] = tool
+            except Exception as e:
+                logger.error(f"Error: Tool '{tool}' has failed with error : {e}")
+                return
+
+            if tool_res and hasattr(tool_res, "result"):
+                res.result.update(tool_res.result)
+                res.export(name)
+            res.metadata["last_tool"] = tool
+        else:
+            logger.error(f"Error: Tool '{tool}' does not have a 'main' function.")
+    else:
+        logger.error(f"Error: Tool '{tool}' does not have a 'file' parameter.")
+
+
+def execute_all_tools(
+    config: gen.configuration, res: result, name: str, resume: bool = False
+) -> None:
+    """
+    Executes all the tools specified in the configuration.
+
+    :param config: gen.configuration object containing the configuration for the tools
+    :param res: result object containing the results of the tools
+    :param name: str containing the name of the result file
+    :param resume: bool indicating whether to resume the execution of the tools from a specific tool
+    :return: None
+    """
+    tools = config.config["TOOLS"]["after_AS_scan"]
+    tools_ls = list(tools.keys())
+
+    if resume:
+        index = tools_ls.index(resume)
+        tools_ls = tools_ls[index:]
+
+    for tool in tools_ls:
+        execute_tool(config, res, name, tool)
+        res.export(name)
+
+
+def main(
+    config: gen.configuration, res: result, name: str, resume: bool = False
+) -> None:
+    """
+    Main function for the orchestration of the tools.
+
+    :param config: gen.configuration object containing the configuration for the tools
+    :param res: result object containing the results of the tools
+    :param name: str containing the name of the result file
+    :param resume: bool indicating whether to resume the execution of the tools from a specific tool
+    :return: None
+    """
+    if not resume:
+        execute_all_tools(config, res, name)
+    else:
+        execute_all_tools(config, res, name, resume)

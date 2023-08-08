@@ -10,17 +10,26 @@ logger = custom_logger.logger
 
 
 def get_tech(url: str) -> dict:
+    """
+    This function takes a URL as input and returns a dictionary containing the detected web technologies.
+    :param url: The URL to analyze.
+    :return: A dictionary containing the detected web technologies.
+    """
     try:
         result = webtech.WebTech(options={"json": True}).start_from_url(url)
     except:
-        try:
-            result = webtech.WebTech(options={"json": True}).start_from_url(url)
-        except:
-            result = None
+        result = None
     return result
 
 
 def main(config: gen.configuration, res: result):
+    """
+    This function is the main function of the script. It takes a configuration object and a result object as input and
+    analyzes the web technologies used by the IP addresses and FQDNs in the result object.
+    :param config: The configuration object.
+    :param res: The result object.
+    :return: The modified result object.
+    """
     if not "analyze_web_techno" in config.config["TOOLS"]["after_AS_scan"]:
         logger.error("[*] Missing analyze_web_techno in TOOLS in config file")
         return

@@ -4,7 +4,7 @@ import lib.custom_logger as custom_logger
 import lib.ip as ip_lib
 from lib.handler import handler
 from lib.result import result
-from lib.domain import domain
+from lib.domain import domain, valid_fqdn
 import tools.AS_scan.orc as AS_scan
 from lib.configuration import configuration
 from tqdm import tqdm
@@ -12,6 +12,7 @@ import time
 import json
 import git
 import pyzipper
+import re
 
 import requests
 
@@ -26,8 +27,19 @@ def clear_screen():
 def fqdn_scanner(
     main_fqdn: str, config: configuration, res: result, recursive: int = 0
 ):
+    """
+    Scans the given FQDN and its subdomains recursively and adds the results to the given result object.
+
+    :param main_fqdn: The main FQDN to scan.
+    :param config: The configuration object.
+    :param res: The result object to add the scan results to.
+    :param recursive: The recursion depth. Default is 0 (no recursion).
+    """
     logger.info("[*] Scanning fqdn {}".format(main_fqdn))
     main_domain = domain(main_fqdn, config)
+    if not valid_fqdn(main_fqdn):
+        logger.error(f"{main_fqdn} is not a valid FQDN")
+        return
     if main_domain.ip == "Dead":
         res.add_dead(main_domain.name)
     else:
@@ -55,7 +67,7 @@ def fqdn_scanner(
     with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
         futures_domain = {fqdn: executor.submit(domain, fqdn, config) for fqdn in subs}
 
-    for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
+    for fqdn in subs:
         if fqdn == "localhost" or config.is_there_scope() and not futures_scope[fqdn]:
             continue
         sub_domain = futures_domain[fqdn].result()
@@ -78,7 +90,7 @@ def fqdn_scanner(
             with ThreadPoolExecutor(max_workers=config.api_max_workers) as executor:
                 futures_get_subs = []
                 futures_domain_recursive = {}
-                for ip in res.result :
+                for ip in res.result:
                     if config.is_there_scope() and not config.is_in_scope(
                         str(ip.ip), mode="IPs"
                     ):
@@ -114,7 +126,7 @@ def fqdn_scanner(
                 )
                 # remove duplicates
                 subs = list(dict.fromkeys(subs))
-                for fqdn in tqdm(subs, desc="Processing subdomains", ncols=100):
+                for fqdn in subs:
                     if (
                         fqdn == "localhost"
                         or config.is_there_scope()
@@ -137,6 +149,15 @@ def fqdn_scanner(
 
 
 def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):
+    """
+    Scans an IP address and adds it to the result object. If the config object has the 'ip_get_fqdn' flag set to True,
+    it will also attempt to get the fully qualified domain name (FQDN) for the IP address and add it to the result object.
+
+    :param ip: The IP address to scan.
+    :param config: The configuration object.
+    :param res: The result object.
+    :param recursive: The recursion level (default is 0).
+    """
     ip_obj = ip_lib.ip(ip, config)
     res.add_ip(ip_obj)
     if config.ip_get_fqdn:
@@ -173,35 +194,56 @@ def ip_scanner(ip: str, config: configuration, res: result, recursive: int = 0):
                 fqdn_scanner(fqdn, config, res, recursive)
 
 
-def is_to_update(last_update, recurence, how_often):
-    """Check if a file needs to be updated
-    last_update : date of last update
-    recurence : can contains "secondes", "minutes", "hours", "days"
-    how_often : can contains a number
+def is_to_update(last_update: str, recurence: str, how_often: int) -> bool:
     """
-    if recurence == "seconds":
-        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
-            how_often
-        ):
-            return True
-    elif recurence == "minutes":
-        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
-            how_often
-        ) * 60:
-            return True
-    elif recurence == "hours":
-        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
-            how_often
-        ) * 3600:
-            return True
-    elif recurence == "days":
-        if time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S")) > int(
-            how_often
-        ) * 86400:
-            return True
-    else:
+    Check if a file needs to be updated
+    :param last_update: date of last update in the format "%d/%m/%Y %H:%M:%S"
+    :param recurence: can contain "seconds", "minutes", "hours", "days"
+    :param how_often: can contain a number
+    :return: True if the file needs to be updated, False otherwise
+    """
+    RECUR_MAP = {"seconds": 1, "minutes": 60, "hours": 3600, "days": 86400}
+    if recurence not in RECUR_MAP:
         logger.error("Wrong recurence")
         return False
+
+    seconds = float(RECUR_MAP[recurence] * int(how_often))
+    if (
+        time.time() - time.mktime(time.strptime(last_update, "%d/%m/%Y %H:%M:%S"))
+        > seconds
+    ):
+        return True
+    else:
+        return False
+
+
+def return_files_untracked_or_modified() -> list:
+    """
+    Return a list of files untracked or modified
+    """
+    repo = git.Repo(".")
+    return repo.untracked_files + [item.a_path for item in repo.index.diff(None)]
+
+
+def detect_if_files_untracked_or_modified() -> bool:
+    """
+    Detect if a file is untracked or modified
+    :return: True if the file is untracked or modified, False otherwise
+    """
+    repo = git.Repo(".")
+    if repo.is_dirty():
+        files = return_files_untracked_or_modified()
+        logger.warning("You have untracked or modified files")
+        logger.warning("Files :")
+        for file in files:
+            logger.warning(file)
+        answer = input("Do you want to continue and reset/erase this files ? (y/n) : ")
+        if answer.lower() == "y":
+            repo.git.reset("--hard")
+            for file in files:
+                if os.path.isfile(file):
+                    os.remove(file)
+    return False
 
 
 def check_update(config: configuration):
@@ -226,6 +268,7 @@ def check_update(config: configuration):
                 if git.cmd.Git().version() and not config.config.get("dev_mode", False):
                     answer = input("Do you want to update? (y/n) : ")
                     if answer.lower() == "y":
+                        detect_if_files_untracked_or_modified()
                         repo = git.Repo(".")
                         repo.remotes.origin.pull()
                         logger.info("Update successful")
@@ -266,12 +309,12 @@ def check_update(config: configuration):
             pass
     except Exception as e:
         logger.error(f"Impossible to check for update : {e}")
-    
+
     # now update file in config
     to_update = config.config["UPDATE"]
 
     if not os.path.isfile("manifest_update.json"):
-        #create manifest_update.json
+        # create manifest_update.json
         manifest_tools = {}
         for line in to_update:
             # format : path_to_file : url
@@ -279,7 +322,7 @@ def check_update(config: configuration):
             manifest_tools[path] = "01/01/2020 00:00:00"
         with open("manifest_update.json", "w") as f:
             json.dump(manifest_tools, f)
-    #reset cursor
+    # reset cursor
     manifest_update = json.loads(open("manifest_update.json", "r").read())
     for line in to_update:
         # format : path_to_file : url
@@ -301,4 +344,3 @@ def check_update(config: configuration):
             manifest_update[path] = time.strftime("%d/%m/%Y %H:%M:%S")
     with open("manifest_update.json", "w") as f:
         json.dump(manifest_update, f)
-   

@@ -15,9 +15,14 @@ logger = custom_logger.logger
 
 
 class configuration:
-    """Configuration is ./congiuration.yaml"""
+    """Configuration is ./configuration.yaml"""
 
     def __init__(self):
+        """
+        Initializes the configuration object by loading the configuration.yaml file and checking its version.
+        :param self: The configuration object.
+        :return: None.
+        """
         try:
             self.config = yaml.load(
                 open("configuration.yaml", "r"), Loader=yaml.FullLoader
@@ -64,6 +69,11 @@ class configuration:
             exit()
 
     def load(self):
+        """
+        Loads the proxy file if it exists, otherwise it activates the proxy and loads the proxies from the links specified in the configuration.yaml file.
+        :param self: The configuration object.
+        :return: None.
+        """
         if self.config["Proxy"]["file"]:
             if os.path.isfile(self.config["Proxy"]["file"]):
                 self.proxy_file = self.config["proxy"]["file"]
@@ -106,7 +116,16 @@ class configuration:
                 # self.check_proxy()
 
     def is_in_scope(self, to_test: str, mode: str):
-        """Check if a fqdn or ip is in scope"""
+        """
+        Check if a fqdn or ip is in scope.
+
+        :param to_test: The fqdn or ip to test.
+        :type to_test: str
+        :param mode: The mode to use for testing.
+        :type mode: str
+        :return: True if the fqdn or ip is in scope, False otherwise.
+        :rtype: bool
+        """
         scope = []
         if self.config["SCOPE"][mode]["file"]:
             if os.path.isfile(self.config["SCOPE"][mode]["file"]):
@@ -121,8 +140,6 @@ class configuration:
         for i in scope:
             if i == to_test:
                 return True
-            else:
-                return False
         if self.config["SCOPE"][mode]["regex"]:
             # example : regex: ["r'tesla'"]
             for regex in self.config["SCOPE"][mode]["regex"]:
@@ -130,12 +147,17 @@ class configuration:
                 regex = r"{}".format(regex)
                 if re.search(regex, to_test):
                     return True
-                else:
-                    return False
         if len(scope) == 0:
             return True
+        return False
 
     def is_there_scope(self):
+        """
+        Check if there is a scope.
+
+        :return: True if there is a scope, False otherwise.
+        :rtype: bool
+        """
         mode = ["IPs", "FQDNs"]
         there_is = False
         for i in mode:
@@ -148,11 +170,11 @@ class configuration:
         return there_is
 
     def get_github_proxy(self, links: dict):
-        """Get a proxy from github.com
-        Format must be ip:port for each line
-        links{
-        link:type (http, https, socks)
-        }
+        """
+        Get a proxy from github.com.
+
+        :param links: The links to get the proxy from.
+        :type links: dict
         """
         for link, type in links.items():
             try:
@@ -167,13 +189,13 @@ class configuration:
                             self.socks_proxy.append(line)
                 else:
                     logger.warning(
-                        "[!] Warning : {} returned status code {}".format(
+                        "[!] Warning: {} returned status code {}".format(
                             link, r.status_code
                         )
                     )
             except:
-                logger.warning("[!] Warning : {} returned an error".format(link))
-        # check if proxy are working
+                logger.warning("[!] Warning: {} returned an error".format(link))
+        # Check if proxies are working
 
     def check_proxy(self):
         # open proxy_test.txt and add all line to a list
