@@ -4,7 +4,6 @@ Proxy :
     activate: true
     file: null #path to file, one proxy per line
     links:
-        https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt : "http"
         https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt : "http"
         https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt: "http"
         https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/socks5.txt : "socks"

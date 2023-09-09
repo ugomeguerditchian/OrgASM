@@ -6,10 +6,33 @@ from lib.result import result
 import lib.generics as gen
 import lib.custom_logger as custom_logger
 import time
-
+import uuid
 logger = custom_logger.logger
 
+ips = set()
+def is_wildcard(fqdn: str) -> bool:
+    """
+    Checks if the fqdn is a wildcard.
 
+    :param fqdn: A string representing the fully qualified domain name.
+    :return: A boolean indicating if the fqdn is a wildcard.
+    """
+    try:
+        random_subdomain = str(uuid.uuid4())
+        answer = dns.resolver.resolve(random_subdomain + "." + fqdn)
+        if answer:
+            # Test 100 random subdomains and store the ips inside ips set
+            for i in range(100):
+                random_subdomain = str(uuid.uuid4())
+                answer = dns.resolver.resolve(random_subdomain + "." + fqdn)
+                if answer:
+                    ips.add(str(answer[0]))
+            return True
+        else:
+            return False
+        
+    except:
+        return False
 def resolve_and_store(
     resolver: dns.resolver.Resolver,
     subdomain: str,
@@ -17,6 +40,7 @@ def resolve_and_store(
     config: gen.configuration,
     res: result,
     pbar: tqdm,
+    wildcard: bool = False,
 ) -> None:
     """
     Resolves the subdomain and stores the result inside res.result.
@@ -31,14 +55,15 @@ def resolve_and_store(
     try:
         answer = resolver.resolve(subdomain + "." + fqdn)
         ip = str(answer[0])
+        if ip in ips and wildcard:
+            return
         name = str(answer.qname)
         ip = ip_lib.ip(ip, config)
         res.add_fqdn(ip, name)
-        # simulate some work being done
-        time.sleep(0.1)
-        pbar.update(1)
     except:
         pass
+    finally:
+        pbar.update(1)
 
 
 def main(config: gen.configuration, res: result, name: str) -> result:
@@ -63,6 +88,11 @@ def main(config: gen.configuration, res: result, name: str) -> result:
         logger.info("[*] Skipping brute_subs")
         return
     logger.info(f"[*] Bruteforcing subdomains for {name}")
+    wildcard = False
+    if is_wildcard(name):
+        logger.info(f"[*] {name} is a wildcard")
+        wildcard = True
+        
     # get wordlist inside tools/worldlists
     wordlist = f"tools/wordlists/{this_tool_config['wordlist_name']}"
     # get resolver inside tools/resolvers
@@ -82,7 +112,7 @@ def main(config: gen.configuration, res: result, name: str) -> result:
             with tqdm(total=len(subdomains), leave=False) as pbar:
                 futures = [
                     executor.submit(
-                        resolve_and_store, resolver, subdomain, fqdn, config, res, pbar
+                        resolve_and_store, resolver, subdomain, fqdn, config, res, pbar, wildcard
                     )
                     for subdomain in subdomains
                 ]

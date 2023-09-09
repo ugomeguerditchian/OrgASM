@@ -106,13 +106,16 @@ class configuration:
                 logger.info("[*] Info: Proxy activated")
                 # logger.info("[*] Testing proxy...")
                 for link, type in self.config["Proxy"]["links"].items():
-                    for line in requests.get(link).text.splitlines():
-                        if type == "http":
-                            self.http_proxy.append(line)
-                        elif type == "https":
-                            self.https_proxy.append(line)
-                        elif type == "socks":
-                            self.socks_proxy.append(line)
+                    try :
+                        for line in requests.get(link).text.splitlines():
+                            if type == "http":
+                                self.http_proxy.append(line)
+                            elif type == "https":
+                                self.https_proxy.append(line)
+                            elif type == "socks":
+                                self.socks_proxy.append(line)
+                    except:
+                        logger.warning("[!] Warning: {} returned an error".format(link))
                 # self.check_proxy()
 
     def is_in_scope(self, to_test: str, mode: str):
