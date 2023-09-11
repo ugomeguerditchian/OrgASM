@@ -106,7 +106,7 @@ class configuration:
                 logger.info("[*] Info: Proxy activated")
                 # logger.info("[*] Testing proxy...")
                 for link, type in self.config["Proxy"]["links"].items():
-                    try :
+                    try:
                         for line in requests.get(link).text.splitlines():
                             if type == "http":
                                 self.http_proxy.append(line)

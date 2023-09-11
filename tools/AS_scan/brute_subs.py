@@ -7,9 +7,12 @@ import lib.generics as gen
 import lib.custom_logger as custom_logger
 import time
 import uuid
+
 logger = custom_logger.logger
 
 ips = set()
+
+
 def is_wildcard(fqdn: str) -> bool:
     """
     Checks if the fqdn is a wildcard.
@@ -30,9 +33,11 @@ def is_wildcard(fqdn: str) -> bool:
             return True
         else:
             return False
-        
+
     except:
         return False
+
+
 def resolve_and_store(
     resolver: dns.resolver.Resolver,
     subdomain: str,
@@ -92,7 +97,7 @@ def main(config: gen.configuration, res: result, name: str) -> result:
     if is_wildcard(name):
         logger.info(f"[*] {name} is a wildcard")
         wildcard = True
-        
+
     # get wordlist inside tools/worldlists
     wordlist = f"tools/wordlists/{this_tool_config['wordlist_name']}"
     # get resolver inside tools/resolvers
@@ -112,7 +117,14 @@ def main(config: gen.configuration, res: result, name: str) -> result:
             with tqdm(total=len(subdomains), leave=False) as pbar:
                 futures = [
                     executor.submit(
-                        resolve_and_store, resolver, subdomain, fqdn, config, res, pbar, wildcard
+                        resolve_and_store,
+                        resolver,
+                        subdomain,
+                        fqdn,
+                        config,
+                        res,
+                        pbar,
+                        wildcard,
                     )
                     for subdomain in subdomains
                 ]

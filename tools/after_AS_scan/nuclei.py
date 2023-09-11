@@ -63,12 +63,18 @@ def nuclei_scan(hosts: list, domain: str, vulnconf: str, headless=False) -> dict
     # Update Nuclei
     logger.info("Updating Nuclei")
     subprocess.run(
-        ["nuclei", "-update"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        ["nuclei", "-update"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True,
     )
     # Update Nuclei templates
     logger.info("Updating Nuclei templates")
     subprocess.run(
-        ["nuclei", "-ut"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        ["nuclei", "-ut"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True,
     )
 
     # Run Nuclei and save the results in a JSON file

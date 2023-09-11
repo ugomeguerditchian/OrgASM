@@ -85,28 +85,36 @@ def main():
         exit()
 
     # Set the input type and name based on the user's input
+
+    if not args.resume:
+        logger.info("[*] Starting tools to run before AS scan")
+
     if args.domain:
         name = args.domain
         res.metadata["input"] = name
         res.metadata["input_type"] = "domain"
+        AS_scan.main(config, res, name)
+        fqdn_scanner(args.domain, config, res, args.recursive)
 
     elif args.ip:
         name = args.ip
         res.metadata["input"] = name
         res.metadata["input_type"] = "ip"
+        AS_scan.main(config, res, name)
+        ip_scanner(args.ip, config, res, args.recursive)
 
     elif args.network:
         name = args.network
         res.metadata["input"] = name
         name = name.replace("/", "_")
+        AS_scan.main(config, res, name)
+        logger.info("[*] Scanning network")
+        this_network = ip_lib.network(args.network)
+        this_network.get_ip_from_network()
+        for ip in this_network.ips:
+            ip_scanner(ip, config, res, args.recursive)
 
     elif args.resume:
-        name = res.metadata["input"]
-
-    logger.info("[*] Starting tools to run before AS scan")
-
-    # Check if the user wants to resume a previous scan
-    if args.resume:
         if ":" in args.resume:
             # if more than one : in the resume argument
             if args.resume.count(":") > 1:
@@ -116,18 +124,8 @@ def main():
             else:
                 tool = args.resume.split(":")[1]
                 resume_file = args.resume.split(":")[0]
-        if not ":" in args.resume:
+        else:
             resume_file = args.resume
-            if "last_tool" in res.metadata:
-                tool = res.metadata["last_tool"]
-            else:
-                logger.error(f"[*] Error: no tool specified")
-                exit(1)
-
-        # Check if the specified tool exists
-        if tool != "export" and not os.path.exists(f"tools/{tool}.py"):
-            logger.error(f"[*] Error: tool {tool} does not exist")
-            exit(1)
 
         # Check if the specified export file exists
         if not os.path.exists(resume_file):
@@ -151,7 +149,19 @@ def main():
 
             # Move the metadata from the data dictionary to the result metadata
             res.metadata = data.pop("metadata")
+            name = res.metadata["input"]
+            if not ":" in args.resume:
+                resume_file = args.resume
+                if "last_tool" in res.metadata:
+                    tool = res.metadata["last_tool"]
+                else:
+                    logger.error(f"[*] Error: no tool specified")
+                    exit(1)
 
+            # Check if the specified tool exists
+            if tool != "export" and not os.path.exists(f"tools/{tool}.py"):
+                logger.error(f"[*] Error: tool {tool} does not exist")
+                exit(1)
             # Convert the IP addresses to IP objects
             for ip in data:
                 new[ip_lib.ip(ip, config)] = data[ip]
@@ -179,40 +189,26 @@ def main():
                 fqdn_scanner(res.metadata["input"], config, res, args.recursive)
             elif res.metadata["input_type"] == "ip":
                 ip_scanner(res.metadata["input"], config, res, args.recursive)
+            elif res.metadata["input_type"] == "network":
+                logger.info("[*] Scanning network")
+                this_network = ip_lib.network(args.network)
+                this_network.get_ip_from_network()
+                for ip in this_network.ips:
+                    ip_scanner(ip, config, res, args.recursive)
         else:
-            resume = False
-
-        logger.info("[*]")
-
-    # If the user provided a domain, scan it
-    elif args.domain:
-        AS_scan.main(config, res, name)
-        fqdn_scanner(args.domain, config, res, args.recursive)
-
-    # If the user provided an IP address, scan it
-    elif args.ip:
-        AS_scan.main(config, res, name)
-        ip_scanner(args.ip, config, res, args.recursive)
-
-    # If the user provided a network, scan it
-    elif args.network:
-        AS_scan.main(config, res, name)
-        logger.info("[*] Scanning network")
-        this_network = ip_lib.network(args.network)
-        this_network.get_ip_from_network()
-        for ip in this_network.ips:
-            ip_scanner(ip, config, res, args.recursive)
+            logger.info("[*] Resuming scan but after AS scan")
 
     # Print the result status and scan completion message
     res.status()
-    logger.info("[*] Attack Surface scan finished")
     res.printer()
 
     # If we're not resuming a scan, run the after scan tools
     if not resume:
+        logger.info("[*] Attack Surface scan finished")
         after_AS_scan.main(config, res, name)
-    else:
+    elif resume:
         if resume == "export":
+            logger.info("[*] Resuming scan from export")
             pass
         else:
             after_AS_scan.main(config, res, name, resume)
